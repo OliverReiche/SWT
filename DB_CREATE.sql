@@ -264,3 +264,4 @@ CREATE TABLE IF NOT EXISTS APPLICANT
     ,Telefonnummer	    varchar(30)	    not null	
     ,LocationID	        integer	        not null	FK, Referenz auf Locations.LocationID
 );
+ 
