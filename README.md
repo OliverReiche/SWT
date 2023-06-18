@@ -4,8 +4,8 @@
 
 
 
-- noch kein Create Befehlt getestet
+- Create Befehele erstellt und getestet -- DB_CREATE.sql -- läuft ohne Fehler
  
-- Großteil an CONSTRAINTS (fk, unique) fehlt
+- Constraints außer FK eingefügt 
 
 - noch nicht ALTER Befele in eigens SQL Doc gefüllt 
