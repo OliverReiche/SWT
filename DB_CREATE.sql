@@ -48,8 +48,8 @@ CREATE TABLE IF NOT EXISTS CUSTOMER
     ,Gender	            enum('M','W','D')	null	-- Werte:M (männlich),W (weiblich),D (divers)
     ,LetzteNutzung	    Date	        not null	
     ,Inaktiv	        boolean	        not null	
-    .PaymentAccountID	integer	        not null	-- FK, Referenz auf PaymentAccount.PaymentAccountID
-    ,WohnortID	i       integer	        not null	-- FK, Referenz auf Locations.LocationID
+    ,PaymentAccountID	integer	        not null	-- FK, Referenz auf PaymentAccount.PaymentAccountID
+    ,WohnortID	        integer	        not null	-- FK, Referenz auf Locations.LocationID
     ,CONSTRAINT customer_pk PRIMARY KEY (CustomerID)
 );
 
@@ -69,13 +69,13 @@ CREATE TABLE IF NOT EXISTS ARCHIV
 
 DROP TABLE IF EXISTS LOCATIONS;
 CREATE TABLE IF NOT EXISTS LOCATIONS
-(
-     LocationID	        integer	        not null	AUTO_INCREMENT
+(	
+	 LocationID	        integer	        not null	AUTO_INCREMENT
     ,PLZ	            char(5)	        not null	
     ,City	            varchar(30)	    not null	
     ,Street	            varchar(30)	    not null	
     ,Sammelpunkt	    boolean         	null
-    ,CONSTRAINT location_pk PRIMARY KEY (LocationID)	
+    ,CONSTRAINT location_pk PRIMARY KEY (LocationID)
 );
 
 
@@ -219,7 +219,7 @@ DROP TABLE IF EXISTS REGION;
 CREATE TABLE IF NOT EXISTS REGION
 (
      RegionID	        integer	        not null
-    ,Region_Name	    archar(30)	    not null
+    ,Region_Name	    varchar(30)	    not null
     ,CONSTRAINT region_pk PRIMARY KEY (RegionID)
 );
 
@@ -271,7 +271,7 @@ CREATE TABLE IF NOT EXISTS FUHRPARK
 DROP TABLE IF EXISTS FAHRTENBUCH;
 CREATE TABLE IF NOT EXISTS FAHRTENBUCH
 (
-     FahrtenbuchID	    integer	        not null	Autoincrement
+     FahrtenbuchID	    integer	        not null	AUTO_INCREMENT
     ,Fahrtstart	        timestamp	    not null	
     ,Fahrtende	        timestamp	    not null	
     ,Fahrtdauer	        timestamp	    not null	-- Berechnet: |Fahrtstart - Fahrtende|
