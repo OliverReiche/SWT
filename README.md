@@ -4,7 +4,7 @@
 
 
 
-- Create Befehele erstellt und getestet -- DB_CREATE.sql -- läuft ohne Fehler
+- (muss wieder geändert werden)Create Befehele erstellt und getestet -- DB_CREATE.sql -- läuft ohne Fehler
  
 - Constraints außer FK eingefügt 
 
