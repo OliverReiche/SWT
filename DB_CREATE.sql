@@ -54,19 +54,6 @@ CREATE TABLE IF NOT EXISTS CUSTOMER
 );
 
 
-DROP TABLE IF EXISTS ARCHIV;
-CREATE TABLE IF NOT EXISTS ARCHIV 
-(
-     ArchivCustomerID	integer	        not null	-- FK, Referenz auf Customer.CustomerID
-    ,LastName	        varchar(30)	    not null	
-    ,FirstName	        varchar(30)	    not null	
-    ,EmailAdress	    varchar(100)	not null	Unique
-    ,Mobilnummer	    varchar(30)	    not null	Unique
-    ,Gender	            enum('M','W','D')	null	-- Werte:M (männlich),W (weiblich),D (divers)
-    ,CONSTRAINT archivcustomer_pk PRIMARY KEY (ArchivCustomerID)
-);
-
-
 DROP TABLE IF EXISTS LOCATIONS;
 CREATE TABLE IF NOT EXISTS LOCATIONS
 (	
@@ -84,7 +71,7 @@ CREATE TABLE IF NOT EXISTS ORDER_EROLLER
 (
      Order_ERollerID	integer	        not null	AUTO_INCREMENT
     ,Nutzdauer	        time	        not null	
-    ,StartpunktID	    integer	        not null	-- FK, Referenz auf Locations.LocationID
+    ,StartPunktID	    integer	        not null	-- FK, Referenz auf Locations.LocationID
     ,EndPunktID	        integer	        not null	-- FK, Referenz auf Locations.LocationID
     ,GesamtFahrstecke	integer	        not null	
     ,CustomerID	        integer	        not null	-- FK, Referenz auf Customer.CustomerID
@@ -126,29 +113,10 @@ CREATE TABLE IF NOT EXISTS REPERATUR
     ,ReperaturDatum	    Date	        not null	
     ,ReperaturDauer	    integer	            null	
     ,Abgeschlossen	    Boolean	            null    -- True = Abgeschlossen, False = noch in Bearbeitung
+    ,DefectID	        integer	        not null	-- FK, Referent auf Defect.DefectID
     ,BearbeiterID	    integer	        not null	-- FK, Referenz auf Employee.EmployeeID
     ,LagerID	        integer	        not null	-- FK, Referenz auf Lager.LagerID
     ,CONSTRAINT reperatur_pk PRIMARY KEY (Reperatur)
-);
-
-
-DROP TABLE IF EXISTS MODELL;
-CREATE TABLE IF NOT EXISTS MODELL 
-(
-     ModellID	        integer	        not null
-    ,Type	            varchar(50)	    not null	
-    ,Name	            varchar(50) 	not null
-    ,CONSTRAINT modell_pk PRIMARY KEY (ModellID)	
-);
-
-
-DROP TABLE IF EXISTS VERKNÜPFUNGSRELATION_LAGER_MODELL;
-CREATE TABLE IF NOT EXISTS VERKNÜPFUNGSRELATION_LAGER_MODELL 
-(
-     Lager_ModellID	    integer	        not null	AUTO_INCREMENT
-    ,ModellID	        integer	        not null	-- FK, Referenz auf Modell.ModellID
-    ,LagerID	        integer	        not null	-- FK, Referenz auf Lager.LagerID
-    ,CONSTRAINT lager_modell_pk PRIMARY KEY (Lager_ModellID)
 );
 
 
@@ -175,17 +143,58 @@ CREATE TABLE IF NOT EXISTS LIEFERANT
 );
 
 
-DROP TABLE IF EXISTS BESTELLUNGEN;
-CREATE TABLE IF NOT EXISTS BESTELLUNGEN 
+DROP TABLE IF EXISTS LAGER_EINZELTEILE;
+CREATE TABLE IF NOT EXISTS LAGER_EINZELTEILE
 (
-     BestellungenID	    integer	        not null	AUTO_INCREMENT
-    ,OrderStart	        date	        not null	
-    ,DeliveryDate	    date	        not null	
-    ,Price	            integer	        not null	
-    ,Quantity	        integer	        not null
-    ,LieferantID	    integer	        not null	-- FK, Referenz auf Lieferant.LieferantID
-    ,CONSTRAINT bestellungen_pk PRIMARY KEY (BestellungenID)
+     Lager_EteileID	    integer	        not null
+    ,LagerID	        integer	        not null	-- FK, Referenz auf Lager.LagerID
+    ,EinzelteileID	    integer	        not null	-- FK, Referenz auf Einzelteile.EinzelteileID
+    ,CONSTRAINT lager_eteile_pk PRIMARY KEY (Lager_EteileID)
+);
 
+
+DROP TABLE IF EXISTS EINZELTEILE;
+CREATE TABLE IF NOT EXISTS EINZELTEILE 
+(   
+     EinzelteileID	    integer     	not null
+    ,EType	            varchar(50)     not null	
+    ,EName	            integer	        not null	
+    ,Gewicht	        decimal(8,2)	not null	
+    ,CONSTRAINT einzelteile_pk PRIMARY KEY (EinzelteileID)
+);
+
+
+DROP TABLE IF EXISTS BESTELLDETAILS;
+CREATE TABLE IF NOT EXISTS BESTELLDETAILS 
+(
+     BestelldetailsID	integer	        not null	AUTO_INCREMENT
+    ,Quanitiy	        integer	        not null	
+    ,PricePerUnit	    decimal(8,2)	not null	
+    ,LieferantID	    integer	        not null	-- FK, Referenz auf Lieferant.LieferantID
+    ,EinzelteileID	    integer     	not null	-- FK, Referenz auf Einzelteile.EinzelteileID
+    ,CONSTRAINT bestelldetails_pk PRIMARY KEY (BestelldetailsID)
+);
+
+
+DROP TABLE IF EXISTS WARENAUSGABE;
+CREATE TABLE IF NOT EXISTS WARENAUSGABE 
+(
+     WarenausgabeID	    integer	        not null	AUTO_INCREMENT
+    ,AnzahlDerTeile     integer         not null
+    ,ReperaturID	    integer	        not null	-- FK, Referenz auf Reperatur.ReperaturID
+    ,EinzelteileID	    integer	        not null	-- FK, Referenz auf Einzelteile.EinzelteileID
+    ,CONSTRAINT warenausgabe_pk PRIMARY KEY (WarenausgabeID)
+);
+
+
+DROP TABLE IF EXISTS ORDER_LAGER;
+CREATE TABLE IF NOT EXISTS ORDER_LAGER 
+(   
+     Order_LagerID	    integer	        not null	AUTO_INCREMENT
+    ,BestellDatum	    date	        not null	
+    ,TotalPrice	        decimal(8,2)	not null	
+    ,BestelldetailsID	integer	        not null	-- FK, Referenz auf Bestelldetails.BestelldetailsID
+    ,CONSTRAINT order_lager_pk PRIMARY KEY (Order_LagerID)
 );
 
 
@@ -199,7 +208,8 @@ CREATE TABLE IF NOT EXISTS EMPLOYEE
     ,HireDate	        date	        not null	
     ,ManagerID	        integer	            null	-- FK, Referenz auf Employee.EmployeeID
     ,PrivatinfoID	    integer	        not null	-- FK, Referenz auf Privatinfo.PrivatinfoID
-    ,SalaryID	        integer	        not null	-- FK, Referenz auf Salary.SalaryID
+    ,Salary  	        integer	        not null	
+    ,Vacation           integer         not null
     ,ArbeitsortID	    integer	        not null	-- FK, Referenz auf Locations.LocationID
     ,DepartmentID	    integer	        not null	-- FK, Referenz auf Department.DepartmentID
     ,CONSTRAINT employee_pk PRIMARY KEY (EmployeeID)
@@ -221,26 +231,6 @@ CREATE TABLE IF NOT EXISTS REGION
      RegionID	        integer	        not null
     ,Region_Name	    varchar(30)	    not null
     ,CONSTRAINT region_pk PRIMARY KEY (RegionID)
-);
-
-
-DROP TABLE IF EXISTS SALARY;
-CREATE TABLE IF NOT EXISTS SALARY
-(
-     SalaryID	        integer 	    not null
-    ,Salary	            integer	        not null
-    ,CONSTRAINT salary_pk PRIMARY KEY (SalaryID)
-);
-
-
-DROP TABLE IF EXISTS VACATION;
-CREATE TABLE IF NOT EXISTS VACATION 
-(
-     VacationID	        integer	        not null
-    ,StartDate	        date	        not null	
-    ,EndDate	        date	        not null	
-    ,EmployeeID	        integer	        not null	-- FK, Referenz auf Employee.EmployeeID
-    ,CONSTRAINT vacation_pk PRIMARY KEY (VacationID)
 );
 
 
@@ -291,18 +281,3 @@ CREATE TABLE IF NOT EXISTS HALTEPUNKT
     ,LocationID	        integer	        not null	-- FK, Referenz auf Locations.LocationID
     ,CONSTRAINT haltepunkt_pk PRIMARY KEY (HaltepunktID)
 );
-
-
-DROP TABLE IF EXISTS APPLICANT;
-CREATE TABLE IF NOT EXISTS APPLICANT
-(
-     ApplicantID	    integer	        not null
-    ,JobTitle	        varchar(50)	    not null	
-    ,LastName	        varchar(30)	    not null	
-    ,FirstName	        varchar(30)	    not null	
-    ,Email	            varchar(100)    not null	Unique
-    ,Telefonnummer	    varchar(30)	    not null	
-    ,LocationID	        integer	        not null	-- FK, Referenz auf Locations.LocationID
-    ,CONSTRAINT applicant_pk PRIMARY KEY (ApplicantID)
-);
- 
