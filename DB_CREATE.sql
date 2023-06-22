@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS EROLLER
     ,IsDefect	        Boolean	        not null	-- True = Defekt, Flase = Nicht Defekt
     ,Battery	        integer	        not null	
     ,StandortID	        integer	        not null	-- FK, Referenz auf Locations.LocationID
-    ,ModellID	        integer	        not null	-- FK, Referenz auf Modell.ModellID
+    ,LagerID	        integer	        not null	-- FK, Referenz auf Lager.LagerID
     ,HaltepunktID	    integer	            null	-- FK, Referenz auf Haltepunkt.HaltepunktID
     ,CONSTRAINT eroller_pk PRIMARY KEY (ERollerID)
 );
