@@ -37,6 +37,104 @@ ALTER TABLE EROLLER
  REFERENCES LOCATIONS(LocationID)
  ,ADD CONSTRAINT eroller_lager_fk FOREIGN KEY (LagerID)
  REFERENCES LAGER(LagerID)
- ,ADD CONSTRAINT eroller_haltepunkr_fk FOREIGN KEY (HaltepunktID)
+ ,ADD CONSTRAINT eroller_haltepunkt_fk FOREIGN KEY (HaltepunktID)
  REFERENCES HALTEPUNKT(HaltepunktID)
+;
+
+
+ALTER TABLE DEFECT
+ ADD CONSTRAINT defect_eroller_fk FOREIGN KEY (ERollerID)
+ REFERENCES EROLLER(ERollerID)
+;
+
+
+ALTER TABLE REPERATUR
+ ADD CONSTRAINT reperatur_defect_fk FOREIGN KEY (DefectID)
+ REFERENCES DEFECT(DefectID)
+ ,ADD CONSTRAINT reperatur_employee_fk FOREIGN KEY (BearbeiterID)
+ REFERENCES EMPLOYEE(EmployeeID)
+ ,ADD CONSTRAINT reperatur_lager_fk FOREIGN KEY (LagerID)
+ REFERENCES LAGER(LagerID)
+;
+
+
+ALTER TABLE LAGER
+ ADD CONSTRAINT lager_region_fk FOREIGN KEY (RegionID)
+ REFERENCES REGION(RegionID)
+;
+
+
+ALTER TABLE LIEFERANT
+ ADD CONSTRAINT lieferant_lager_fk FOREIGN KEY (LagerID)
+ REFERENCES LAGER(LagerID)
+;
+
+
+ALTER TABLE LAGER_EINZELTEILE
+ ADD CONSTRAINT lager_einzelteile_lager_fk FOREIGN KEY (LagerID)
+ REFERENCES LAGER(LagerID)
+ ,ADD CONSTRAINT lager_einzelteile_fk FOREIGN KEY (EinzelteileID)
+ REFERENCES EINZELTEILE(EinzelteileID)
+;
+
+
+ALTER TABLE BESTELLDETAILS
+ ADD CONSTRAINT bestelldetails_lieferant_fk FOREIGN KEY (LieferantID)
+ REFERENCES LIEFERANT(LieferantID)
+ ,ADD CONSTRAINT bestelldetails_einzelteile_fk FOREIGN KEY (EinzelteileID)
+ REFERENCES EINZELTEILE(EinzelteileID)
+;
+
+
+ALTER TABLE WARENAUSGABE
+ ADD CONSTRAINT warenausgabe_reperatur_fk FOREIGN KEY (ReperaturID)
+ REFERENCES REPERATUR(ReperaturID)
+ ,ADD CONSTRAINT warenausgabe_einzelteile_fk FOREIGN KEY (EinzelteileID)
+ REFERENCES EINZELTEILE(EinzelteileID)
+;
+
+
+ALTER TABLE ORDER_LAGER
+ ADD CONSTRAINT order_lager_bestelldetails_fk FOREIGN KEY (BestelldetailsID)
+ REFERENCES BESTELLDETAILS(BestelldetailsID)
+;
+
+
+ALTER TABLE EMPLOYEE
+ ADD CONSTRAINT employee_manager_fk FOREIGN KEY (ManagerID)
+ REFERENCES EMPLOYEE(EmployeeID)
+ ,ADD CONSTRAINT employee_privatinfo_fk FOREIGN KEY (PrivatinfoID)
+ REFERENCES PRIVATEINFO(PrivatinfoID)
+ ,ADD CONSTRAINT employee_locations_fk FOREIGN KEY (ArbeitsortID)
+ REFERENCES LOCATIONS(LocationID)
+ ,ADD CONSTRAINT employee_department_fk FOREIGN KEY (DepartmentID)
+ REFERENCES DEPARTMENT(DepartmentID)
+;
+
+
+ALTER TABLE PRIVATEINFO
+ ADD CONSTRAINT privateinfo_locations_fk FOREIGN KEY (WohnortID)
+ REFERENCES LOCATIONS(LocationID)
+;
+
+
+ALTER TABLE FUHRPARK
+ ADD CONSTRAINT fuhrpark_lager_fk FOREIGN KEY (LagerID)
+ REFERENCES LAGER(LagerID)
+;
+
+
+ALTER TABLE FAHRTENBUCH
+ ADD CONSTRAINT fahrtenbuch_fuhrpark_fk FOREIGN KEY (FirmenwagenID)
+ REFERENCES FUHRPARK(FirmenwagenID)
+ ,ADD CONSTRAINT fahrtenbuch_employee_fk FOREIGN KEY (EmployeeID)
+ REFERENCES EMPLOYEE(EmployeeID)
+;
+
+
+ALTER TABLE HALTEPUNKT
+ ADD CONSTRAINT haltepunkt_fahrtenbuch_fk FOREIGN KEY (FahrtenbuchID)
+ REFERENCES FAHRTENBUCH(FahrtenbuchID)
+ ,ADD CONSTRAINT haltepunkt_locations_fk FOREIGN KEY (LocationID)
+ REFERENCES LOCATIONS(LocationID)
 ;
