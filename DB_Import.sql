@@ -98,3 +98,26 @@ values
 ('ERIK' ,'SCHULTE' ,'017523210987','e.schulte@googlemail.com');
 
 -- Wohnort ID fehlt noch, weil noch keine Location Tabelle implementiert ist!
+-- --------------------------------------------------------
+
+--
+-- Daten für Tabelle PaymentMethod
+--
+
+insert into PaymentMethod values
+(1, 20, 'APP'),
+(2, 18, 'KUNDENKARTE');
+
+-- --------------------------------------------------------
+
+--
+-- Daten für Tabelle Locations
+-- Import erfolgt über Bulk Import
+-- beim ausführen des Befehls Pfad anpassen!
+
+LOAD DATA INFILE 'E:/Richard/Uni/2.Semester/Projekt/Import/locations.csv' 
+INTO TABLE Locations 
+FIELDS TERMINATED BY ',' (PLZ, City, Street, Sammelpunkt) LINES TERMINATED BY '\r\n'
+SET LocationID = null;
+
+-- --------------------------------------------------------
