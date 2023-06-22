@@ -5,7 +5,10 @@ DEFAULT CHARACTER SET utf8mb4
 COLLATE utf8mb4_general_ci;
 USE EW_DB;
 
-------------------------------------------------------------------------------------------------
+
+
+
+
 
 DROP TABLE IF EXISTS PAYMENTMETHOD;
 CREATE TABLE IF NOT EXISTS PAYMENTMETHOD 
@@ -109,14 +112,14 @@ CREATE TABLE IF NOT EXISTS DEFECT
 DROP TABLE IF EXISTS REPERATUR;
 CREATE TABLE IF NOT EXISTS REPERATUR 
 (
-     Reperatur	        integer	        not null	AUTO_INCREMENT
+     ReperaturID	    integer	        not null	AUTO_INCREMENT
     ,ReperaturDatum	    Date	        not null	
     ,ReperaturDauer	    integer	            null	
     ,Abgeschlossen	    Boolean	            null    -- True = Abgeschlossen, False = noch in Bearbeitung
     ,DefectID	        integer	        not null	-- FK, Referent auf Defect.DefectID
     ,BearbeiterID	    integer	        not null	-- FK, Referenz auf Employee.EmployeeID
     ,LagerID	        integer	        not null	-- FK, Referenz auf Lager.LagerID
-    ,CONSTRAINT reperatur_pk PRIMARY KEY (Reperatur)
+    ,CONSTRAINT reperatur_pk PRIMARY KEY (ReperaturID)
 );
 
 
@@ -127,7 +130,7 @@ CREATE TABLE IF NOT EXISTS LAGER
     ,MinAmount	        integer	        not null	
     ,MaxAmount	        integer	        not null	
     ,AmountInStock	    integer	        not null	
-    ,RegionID	        varchar(30)	    not null	-- FK, Referenz auf Region.RegionID
+    ,RegionID	        integer		    not null	-- FK, Referenz auf Region.RegionID
     ,CONSTRAINT lager_pk PRIMARY KEY (LagerID)
 );
 
@@ -207,7 +210,7 @@ CREATE TABLE IF NOT EXISTS EMPLOYEE
     ,JobTitle	        varchar(30)	    not null	
     ,HireDate	        date	        not null	
     ,ManagerID	        integer	            null	-- FK, Referenz auf Employee.EmployeeID
-    ,PrivatinfoID	    integer	        not null	-- FK, Referenz auf Privatinfo.PrivatinfoID
+    ,PrivateinfoID	    integer	        not null	-- FK, Referenz auf Privateinfo.PrivatinfoID
     ,Salary  	        integer	        not null	
     ,Vacation           integer         not null
     ,ArbeitsortID	    integer	        not null	-- FK, Referenz auf Locations.LocationID

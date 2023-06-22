@@ -1,7 +1,5 @@
 
------------------------------------------------------------
-            --- Insert Skript für alle FKs  ---
------------------------------------------------------------
+
 
 
 ALTER TABLE ZAHLUNG
@@ -103,8 +101,8 @@ ALTER TABLE ORDER_LAGER
 ALTER TABLE EMPLOYEE
  ADD CONSTRAINT employee_manager_fk FOREIGN KEY (ManagerID)
  REFERENCES EMPLOYEE(EmployeeID)
- ,ADD CONSTRAINT employee_privatinfo_fk FOREIGN KEY (PrivatinfoID)
- REFERENCES PRIVATEINFO(PrivatinfoID)
+ ,ADD CONSTRAINT employee_privatinfo_fk FOREIGN KEY (PrivateinfoID)
+ REFERENCES PRIVATEINFO(PrivateinfoID)
  ,ADD CONSTRAINT employee_locations_fk FOREIGN KEY (ArbeitsortID)
  REFERENCES LOCATIONS(LocationID)
  ,ADD CONSTRAINT employee_department_fk FOREIGN KEY (DepartmentID)
