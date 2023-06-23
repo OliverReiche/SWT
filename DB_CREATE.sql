@@ -211,8 +211,6 @@ CREATE TABLE IF NOT EXISTS EMPLOYEE
     ,HireDate	        date	        not null	
     ,ManagerID	        integer	            null	-- FK, Referenz auf Employee.EmployeeID
     ,PrivateinfoID	    integer	        not null	-- FK, Referenz auf Privateinfo.PrivatinfoID
-    ,Salary  	        integer	        not null	
-    ,Vacation           integer         not null
     ,ArbeitsortID	    integer	        not null	-- FK, Referenz auf Locations.LocationID
     ,DepartmentID	    integer	        not null	-- FK, Referenz auf Department.DepartmentID
     ,CONSTRAINT employee_pk PRIMARY KEY (EmployeeID)

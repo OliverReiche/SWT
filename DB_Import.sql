@@ -13,7 +13,7 @@ USE EW_DB;
 -- Daten für Tabelle Departments
 --
 
-insert into departments values
+insert into department values
 (10, 'MANAGEMENT'),
 (30, 'HUMAN RESOURCE'),
 (50, 'CUSTOMER SERVICE'),
@@ -104,11 +104,10 @@ values
 -- Daten für Tabelle Employee
 --
 -- BusinessPhone weggelassen erstmal
--- Wohnorte in Kombination mit dem jeweiligen Lager beachten
 
 insert into Employee (BusinessEmail, JobTitle, HireDate, ManagerId, PrivateinfoID, ArbeitsortId, DepartmentID)
 values
-('a.schmidt@EcoWheels.com'      ,'President'            ,'2015-01-01', NULL, 1  ,110, 10), -- Erfurt
+('a.schmidt@EcoWheels.com'      ,'President'            ,'2015-01-01', NULL    ,1  ,110, 10), -- Erfurt
 ('b.mayer@EcoWheels.com'        ,'VP-Investement'       ,'2015-01-01', 1    ,2  ,110, 10), -- Erfurt
 ('c.bauer@EcoWheels.com'        ,'VP-Warehousing'       ,'2015-01-01', 1    ,3  ,110, 70), -- Erfurt
 ('d.keller@EcoWheels.com'       ,'Abteilungsleiter WH'  ,'2015-01-01', 3    ,4  ,110, 70), -- Erfurt
@@ -168,8 +167,8 @@ values
 --
 
 insert into PaymentMethod values
-(1, 20, 'APP'),
-(2, 18, 'KUNDENKARTE');
+(1, 20, 'A'),
+(2, 18, 'K');
 
 -- --------------------------------------------------------
 
@@ -178,10 +177,14 @@ insert into PaymentMethod values
 -- Import erfolgt über Bulk Import
 -- beim ausführen des Befehls Pfad anpassen!
 
-LOAD DATA INFILE 'E:/Richard/Uni/2.Semester/Projekt/Import/locations.csv' 
-INTO TABLE Locations 
-FIELDS TERMINATED BY ',' (PLZ, City, Street, Sammelpunkt) LINES TERMINATED BY '\r\n'
-SET LocationID = null;
+LOAD DATA INFILE 'locations.csv' 
+INTO TABLE LOCATIONS
+FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n'(PLZ, City, Street, Sammelpunkt);
+
+-- after import add CAPS 
+UPDATE `locations`
+SET City = 'MUENCHEN'
+WHERE City = 'MueNCHEN';
 
 -- Übersicht Locations:
 -- 1  - 50  = Hamburg
