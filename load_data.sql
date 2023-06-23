@@ -1,0 +1,3 @@
+LOAD DATA INFILE 'test/locations.csv' 
+INTO TABLE LOCATIONS
+FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n'(PLZ, City, Street, Sammelpunkt);
