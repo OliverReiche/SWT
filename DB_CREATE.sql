@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS STANDORT
 DROP TABLE IF EXISTS BESTELLUNG_EROLLER;
 CREATE TABLE IF NOT EXISTS BESTELLUNG_EROLLER 
 (
-     BestellERID	integer	        not null	AUTO_INCREMENT
+     BestellERID	    integer	        not null	AUTO_INCREMENT
     ,Nutzdauer	        time	        not null	
     ,StartPunktID	    integer	        not null	-- FK, Referenz auf Standort.StandortID
     ,EndPunktID	        integer	        not null	-- FK, Referenz auf Standort.StandortID
@@ -148,7 +148,6 @@ CREATE TABLE IF NOT EXISTS LIEFERANT
      LieferantID	    integer	        not null	
     ,LieferantName	    varchar(50)	    not null	Unique
     ,LetzteLieferung	date	        not null	
-    ,LagerID	        integer	        not null	-- FK, Referenz auf Lager.LagerID
     ,CONSTRAINT liefernat_pk PRIMARY KEY (LieferantID)
 );
 
@@ -222,17 +221,17 @@ CREATE TABLE IF NOT EXISTS MITARBEITER
     ,ManagerID	        integer	            null	-- FK, Referenz auf Mitarbeiter.MitarbeiterID
     ,PrivateinfoID	    integer	        not null	-- FK, Referenz auf Privateinfo.PrivatinfoID
     ,ArbeitsortID	    integer	        not null	-- FK, Referenz auf Standort.StandortID
-    ,AbteilungsID	    integer	        not null	-- FK, Referenz auf Abteilungs.AbteilungsID
+    ,AbteilungID	    integer	        not null	-- FK, Referenz auf Abteilung.AbteilungID
     ,CONSTRAINT mitarbeiter_pk PRIMARY KEY (MitarbeiterID)
 );
 
 
-DROP TABLE IF EXISTS ABTEILUNGS;
-CREATE TABLE IF NOT EXISTS ABTEILUNGS
+DROP TABLE IF EXISTS ABTEILUNG;
+CREATE TABLE IF NOT EXISTS ABTEILUNG
 (
-     AbteilungsID	    integer	        not null
-    ,AbteilungsName	    varchar(30)	    not null	Unique
-    ,CONSTRAINT abteilungs_pk PRIMARY KEY (AbteilungsID)
+     AbteilungID	    integer	        not null
+    ,AbteilungName	    varchar(30)	    not null	Unique
+    ,CONSTRAINT abteilung_pk PRIMARY KEY (AbteilungID)
 );
 
 
