@@ -105,7 +105,7 @@ ALTER TABLE MITARBEITER
  ADD CONSTRAINT mitarbeiter_manager_fk FOREIGN KEY (ManagerID)
  REFERENCES MITARBEITER(MitarbeiterID)
  ,ADD CONSTRAINT mitarbeiter_privatinfo_fk FOREIGN KEY (PrivatinfoID)
- REFERENCES PRIVATEINFO(PrivatinfoID)
+ REFERENCES PRIVATINFO(PrivatinfoID)
  ,ADD CONSTRAINT mitarbeiter_standort_fk FOREIGN KEY (ArbeitsortID)
  REFERENCES STANDORT(StandortID)
  ,ADD CONSTRAINT mitarbeiter_abteilung_fk FOREIGN KEY (AbteilungID)

@@ -1,3 +1,3 @@
 LOAD DATA INFILE 'test/locations.csv' 
-INTO TABLE LOCATIONS
-FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n'(PLZ, City, Street, Sammelpunkt);
+INTO TABLE STANDORT
+FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n'(PLZ, Stadt, Strasse, Sammelpunkt);

@@ -30,8 +30,8 @@ CREATE TABLE IF NOT EXISTS ZAHLUNG
 );
 
 
-DROP TABLE IF EXISTS Kundenkonto;
-CREATE TABLE IF NOT EXISTS Kundenkonto
+DROP TABLE IF EXISTS KUNDENKONTO;
+CREATE TABLE IF NOT EXISTS KUNDENKONTO
 (
      KKontoID	        integer	        not null	AUTO_INCREMENT
     ,Guthaben	        decimal(8,2)	not null	
@@ -219,7 +219,7 @@ CREATE TABLE IF NOT EXISTS MITARBEITER
     ,JobName	        varchar(30)	    not null	
     ,Einstelldatum	    date	        not null	
     ,ManagerID	        integer	            null	-- FK, Referenz auf Mitarbeiter.MitarbeiterID
-    ,PrivateinfoID	    integer	        not null	-- FK, Referenz auf Privateinfo.PrivatinfoID
+    ,PrivatinfoID	    integer	        not null	-- FK, Referenz auf Privatinfo.PrivatinfoID
     ,ArbeitsortID	    integer	        not null	-- FK, Referenz auf Standort.StandortID
     ,AbteilungID	    integer	        not null	-- FK, Referenz auf Abteilung.AbteilungID
     ,CONSTRAINT mitarbeiter_pk PRIMARY KEY (MitarbeiterID)
