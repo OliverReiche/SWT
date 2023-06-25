@@ -105,8 +105,6 @@ values
 --
 -- BusinessPhone weggelassen erstmal
 
-01-04-07-10
-
 insert into MITARBEITER (BusinessEmail, JobTitle, Einstelldatum, ManagerId, PrivatinfoID, ArbeitsortId, AbteilungID)
 values
 ('a.schmidt@EcoWheels.com'      ,'President'            ,'2015-01-01', NULL ,1  ,110, 10), -- Erfurt
@@ -239,4 +237,15 @@ INTO TABLE LOCATIONS
 FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n'(Nachname, Vorname, EmailAdress, Mobilnummer, Geschlecht, LetzeNutzung, Inaktiv, KKontoID, WohnortID);
 --! wenn Import funktioniert noch ändern, dass niemand in einem Lager wohnt zum Beispiel!
 
+-- --------------------------------------------------------
+
+--
+-- Daten für Tabelle Kundenkonto
+--
+
+LOAD DATA INFILE 'kundenkonto.csv' 
+INTO TABLE LOCATIONS
+FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n'(Guthaben);
+
+--! LetzteZahlung über prozedur einfügen! letzte Zahlung Datum = letzte Nutzung Datum!!
 -- --------------------------------------------------------
