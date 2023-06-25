@@ -34,7 +34,7 @@ DROP TABLE IF EXISTS KUNDENKONTO;
 CREATE TABLE IF NOT EXISTS KUNDENKONTO
 (
      KKontoID	        integer	        not null	AUTO_INCREMENT
-    ,Guthaben	        decimal(8,2)	not null	
+    ,Guthaben	        decimal(5,2)	not null	
     ,LetzteZahlung	    Date	            null	
     ,CONSTRAINT kundenkonto_pk PRIMARY KEY (KKontoID)
 );
