@@ -176,15 +176,15 @@ CREATE TABLE IF NOT EXISTS EINZELTEILE
 );
 
 
-DROP TABLE IF EXISTS BESTELLDETAILS;
-CREATE TABLE IF NOT EXISTS BESTELLDETAILS 
+DROP TABLE IF EXISTS LIEFERDETAILS;
+CREATE TABLE IF NOT EXISTS LIEFERDETAILS 
 (
-     BestelldetailsID	integer	        not null	AUTO_INCREMENT
+     LieferdetailsID	integer	        not null	AUTO_INCREMENT
     ,Anzahl	            integer	        not null	
     ,Stueckpreis  	    decimal(8,2)	not null	
     ,LieferantID	    integer	        not null	-- FK, Referenz auf Lieferant.LieferantID
     ,EinzelteileID	    integer     	not null	-- FK, Referenz auf Einzelteile.EinzelteileID
-    ,CONSTRAINT bestelldetails_pk PRIMARY KEY (BestelldetailsID)
+    ,CONSTRAINT lieferdetails_pk PRIMARY KEY (LieferdetailsID)
 );
 
 
@@ -199,14 +199,14 @@ CREATE TABLE IF NOT EXISTS WARENAUSGABE
 );
 
 
-DROP TABLE IF EXISTS BESTELLUNG_LAGER;
-CREATE TABLE IF NOT EXISTS BESTELLUNG_LAGER 
+DROP TABLE IF EXISTS LIEFERUNG;
+CREATE TABLE IF NOT EXISTS LIEFERUNG 
 (   
-     BestellLID	        integer	        not null	AUTO_INCREMENT
+     LieferungID	    integer	        not null	AUTO_INCREMENT
     ,BestellDatum	    date	        not null	
     ,GesamtPreis	    decimal(8,2)	not null	
-    ,BestelldetailsID	integer	        not null	-- FK, Referenz auf Bestelldetails.BestelldetailsID
-    ,CONSTRAINT bestell_lager_pk PRIMARY KEY (BestellLID)
+    ,LieferdetailsID	integer	        not null	-- FK, Referenz auf Lieferdetails.LieferdetailsID
+    ,CONSTRAINT lieferung_pk PRIMARY KEY (LieferungID)
 );
 
 

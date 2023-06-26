@@ -79,10 +79,10 @@ ALTER TABLE LAGER_EINZELTEILE
 ;
 
 
-ALTER TABLE BESTELLDETAILS
- ADD CONSTRAINT bestelldetails_lieferant_fk FOREIGN KEY (LieferantID)
+ALTER TABLE LIEFERDETAILS
+ ADD CONSTRAINT lieferdetails_lieferant_fk FOREIGN KEY (LieferantID)
  REFERENCES LIEFERANT(LieferantID)
- ,ADD CONSTRAINT bestelldetails_einzelteile_fk FOREIGN KEY (EinzelteileID)
+ ,ADD CONSTRAINT lieferdetails_einzelteile_fk FOREIGN KEY (EinzelteileID)
  REFERENCES EINZELTEILE(EinzelteileID)
 ;
 
@@ -95,9 +95,9 @@ ALTER TABLE WARENAUSGABE
 ;
 
 
-ALTER TABLE BESTELLUNG_LAGER
- ADD CONSTRAINT bestell_lager_bestelldetails_fk FOREIGN KEY (BestelldetailsID)
- REFERENCES BESTELLDETAILS(BestelldetailsID)
+ALTER TABLE LIEFERUNG
+ ADD CONSTRAINT lieferung_lieferdetails_fk FOREIGN KEY (LieferdetailsID)
+ REFERENCES LIEFERDETAILS(LieferdetailsID)
 ;
 
 
