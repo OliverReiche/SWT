@@ -234,8 +234,7 @@ values
 
 LOAD DATA INFILE 'kunden.csv' 
 INTO TABLE kunde
-FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n'(Nachname, Vorname, EmailAdress, Mobilnummer, Geschlecht, LetzeNutzung, Inaktiv, KKontoID, WohnortID);
---! wenn Import funktioniert noch ändern, dass niemand in einem Lager wohnt zum Beispiel!
+FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n'(Nachname, Vorname, EmailAdress, Mobilnummer, Geschlecht, LetzteNutzung, Inaktiv, KKontoID, WohnortID);
 
 -- --------------------------------------------------------
 
@@ -247,5 +246,4 @@ LOAD DATA INFILE 'kundenkonto.csv'
 INTO TABLE kundenkonto
 FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n'(Guthaben);
 
---! LetzteZahlung über prozedur einfügen! letzte Zahlung Datum = letzte Nutzung Datum!!
 -- --------------------------------------------------------
