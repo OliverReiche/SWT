@@ -247,3 +247,23 @@ INTO TABLE kundenkonto
 FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n'(Guthaben);
 
 -- --------------------------------------------------------
+
+--
+-- Daten für Tabelle Lieferant
+--
+
+LOAD DATA INFILE 'Lieferant.csv'
+INTO TABLE Lieferant
+FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (LieferantID, LieferantName, LetzteLieferung);
+
+-- --------------------------------------------------------
+
+--
+-- Daten für Tabelle Roller
+--
+
+LOAD DATA INFILE 'Roller.csv'
+INTO TABLE Lieferant
+FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (LetzteWartung, NaechsteWartung, IstDefekt, Batterie, LagerID, StandortID, HaltepunktID);
+
+-- --------------------------------------------------------
