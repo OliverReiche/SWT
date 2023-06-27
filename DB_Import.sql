@@ -105,7 +105,7 @@ values
 --
 -- BusinessPhone weggelassen erstmal
 
-insert into MITARBEITER (BusinessEmail, JobTitle, Einstelldatum, ManagerId, PrivatinfoID, ArbeitsortId, AbteilungID)
+insert into MITARBEITER (BusinessEmail, JobName, Einstelldatum, ManagerId, PrivatinfoID, ArbeitsortId, AbteilungID)
 values
 ('a.schmidt@EcoWheels.com'      ,'President'            ,'2015-01-01', NULL ,1  ,101, 10), -- Erfurt
 ('b.mayer@EcoWheels.com'        ,'VP-Investement'       ,'2015-01-01', 1    ,2  ,101, 10), -- Erfurt
@@ -233,7 +233,7 @@ values
 -- beim ausführen des Befehls Pfad anpassen!
 
 LOAD DATA INFILE 'kunden.csv' 
-INTO TABLE LOCATIONS
+INTO TABLE kunde
 FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n'(Nachname, Vorname, EmailAdress, Mobilnummer, Geschlecht, LetzeNutzung, Inaktiv, KKontoID, WohnortID);
 --! wenn Import funktioniert noch ändern, dass niemand in einem Lager wohnt zum Beispiel!
 
@@ -244,7 +244,7 @@ FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n'(Nachname, Vorname, EmailAdre
 --
 
 LOAD DATA INFILE 'kundenkonto.csv' 
-INTO TABLE LOCATIONS
+INTO TABLE kundenkonto
 FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n'(Guthaben);
 
 --! LetzteZahlung über prozedur einfügen! letzte Zahlung Datum = letzte Nutzung Datum!!
