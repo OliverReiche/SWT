@@ -170,7 +170,7 @@ CREATE TABLE IF NOT EXISTS EINZELTEILE
 (   
      EinzelteileID	    integer     	not null
     ,EType	            varchar(50)     not null	
-    ,EName	            integer	        not null	
+    ,EName	            varchar(100)    not null	
     ,Gewicht	        decimal(8,2)	not null	
     ,CONSTRAINT einzelteile_pk PRIMARY KEY (EinzelteileID)
 );
