@@ -263,7 +263,7 @@ FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (LieferantID, LieferantName,
 --
 
 LOAD DATA INFILE 'Roller.csv'
-INTO TABLE Lieferant
+INTO TABLE ERoller
 FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (LetzteWartung, NaechsteWartung, IstDefekt, Batterie, LagerID, StandortID, HaltepunktID);
 
 -- --------------------------------------------------------
