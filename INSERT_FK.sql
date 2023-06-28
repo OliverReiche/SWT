@@ -80,8 +80,8 @@ ALTER TABLE LAGER_EINZELTEILE
 
 
 ALTER TABLE LIEFERDETAILS
- ADD CONSTRAINT lieferdetails_lieferant_fk FOREIGN KEY (LieferantID)
- REFERENCES LIEFERANT(LieferantID)
+ ADD CONSTRAINT lieferdetails_lager_lieferant_fk FOREIGN KEY (Lager_LieferID)
+ REFERENCES Lager_Lieferant(Lager_LieferID)
  ,ADD CONSTRAINT lieferdetails_einzelteile_fk FOREIGN KEY (EinzelteileID)
  REFERENCES EINZELTEILE(EinzelteileID)
 ;
