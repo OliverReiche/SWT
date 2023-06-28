@@ -182,7 +182,7 @@ CREATE TABLE IF NOT EXISTS LIEFERDETAILS
      LieferdetailsID	integer	        not null	AUTO_INCREMENT
     ,Anzahl	            integer	        not null	
     ,Stueckpreis  	    decimal(8,2)	not null	
-    ,LieferantID	    integer	        not null	-- FK, Referenz auf Lieferant.LieferantID
+    ,Lager_LieferID	    integer	        not null	-- FK, Referenz auf lager_lieferant.Lager_LieferantID
     ,EinzelteileID	    integer     	not null	-- FK, Referenz auf Einzelteile.EinzelteileID
     ,CONSTRAINT lieferdetails_pk PRIMARY KEY (LieferdetailsID)
 );
