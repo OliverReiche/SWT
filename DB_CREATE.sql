@@ -203,7 +203,7 @@ DROP TABLE IF EXISTS LIEFERUNG;
 CREATE TABLE IF NOT EXISTS LIEFERUNG 
 (   
      LieferungID	    integer	        not null	AUTO_INCREMENT
-    ,BestellDatum	    date	        not null	
+    ,LieferDatum	    date	        not null	
     ,GesamtPreis	    decimal(8,2)	not null	
     ,LieferdetailsID	integer	        not null	-- FK, Referenz auf Lieferdetails.LieferdetailsID
     ,CONSTRAINT lieferung_pk PRIMARY KEY (LieferungID)
