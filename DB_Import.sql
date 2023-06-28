@@ -309,3 +309,24 @@ INTO TABLE zahlung
 FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (GesamtPreis, BestellERID, ZMethodID);
 
 -- --------------------------------------------------------
+
+
+--
+-- Daten für Tabelle Lieferung
+--
+
+LOAD DATA INFILE 'lieferung.csv'
+INTO TABLE lieferung
+FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (LieferDatum, GesamtPreis, LieferdetailsID);
+
+-- --------------------------------------------------------
+
+--
+-- Daten für Tabelle Lieferdetails
+--
+
+LOAD DATA INFILE 'lieferdetails.csv'
+INTO TABLE lieferdetails
+FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (Lager_LieferID, Anzahl,Stueckpreis, EinzelteileID);
+
+-- --------------------------------------------------------

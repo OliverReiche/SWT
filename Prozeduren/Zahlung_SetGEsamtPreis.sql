@@ -1,6 +1,6 @@
 
 DELIMITER $$
-CREATE OR REPLACE PROCEDURE p_SetGesamtPreis(IN inZahlungID int)
+CREATE OR REPLACE PROCEDURE p_SetGesamtPreisERollerBuchung(IN inZahlungID int)
 BEGIN
 DECLARE noZahlungFound CONDITION for SQLSTATE '45000';
 DECLARE vGesamtPreis decimal(6,2);
@@ -32,7 +32,7 @@ call p_SetGesamtPreis(1); -- setzt GesamtPreis auf 5,2 € bei ZahlungsID 1
 
 
 DELIMITER $$
-create or replace procedure p_SetAllGesamtPreis()
+create or replace procedure p_SetAllGesamtPreisERollerBuchung()
 BEGIN
 	DECLARE vID int;
 	DECLARE vDone BOOLEAN DEFAULT FALSE;
@@ -49,7 +49,7 @@ BEGIN
 	FETCH vZahlungCur into vID;	
 	
 	setGesamtPreisLoop:LOOP
-	call p_SetAllGesamtPreis(vID);	
+	call p_SetGesamtPreisERollerBuchung(vID);	
 	
 		FETCH vZahlungCur into vID;
 			IF vDone
