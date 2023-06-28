@@ -43,7 +43,7 @@ BEGIN
 	
 	FETCH vKundeCur into vID;	
 	
-	setNutzungLoop: LOOP
+	setNutzungLoop:LOOP
 	call p_SetLetzteZahlung(vID);	
 	
 		FETCH vKundeCur into vID;

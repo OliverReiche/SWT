@@ -220,14 +220,6 @@ values
 -- --------------------------------------------------------
 
 --
--- Daten für Tabelle Roller
---
---! Achtung Roller haben eine Verknüpfung zu Lager!
---! daher bei LocationID nur werte die zu der Region passen
-
--- --------------------------------------------------------
-
---
 -- Daten für Tabelle Kunde
 -- Import erfolgt über Bulk Import
 -- beim ausführen des Befehls Pfad anpassen!
@@ -265,5 +257,55 @@ FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (LieferantID, LieferantName,
 LOAD DATA INFILE 'Roller.csv'
 INTO TABLE eroller
 FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (LetzteWartung, NaechsteWartung, IstDefekt, Batterie, LagerID, StandortID, HaltepunktID);
+
+-- --------------------------------------------------------
+
+--
+-- Daten für Tabelle Einzelteile
+--
+
+LOAD DATA INFILE 'Einzelteile.csv'
+INTO TABLE Einzelteile
+FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (EinzelteileID, EType, EName, Gewicht);
+
+-- --------------------------------------------------------
+
+--
+-- Daten für Tabelle Lager_Einzelteile
+--
+
+LOAD DATA INFILE 'lager_einzelteile.csv'
+INTO TABLE lager_einzelteile
+FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (MinBestand, MaxBestand, Bestand, LagerID, EinzelteileID);
+
+-- --------------------------------------------------------
+
+--
+-- Daten für Tabelle Lager_Lieferant
+--
+
+LOAD DATA INFILE 'lager_lieferant.csv'
+INTO TABLE lager_lieferant
+FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (Lager_LieferID, LieferantID, LagerID);
+
+-- --------------------------------------------------------
+
+--
+-- Daten für Tabelle bestellung_eroller
+--
+
+LOAD DATA INFILE 'bestellung_eroller.csv'
+INTO TABLE bestellung_eroller
+FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (Nutzdauer, StartPunktID, EndPunktID, GesamtFahrstecke, KundeID, ERollerID);
+
+-- --------------------------------------------------------
+
+--
+-- Daten für Tabelle Zahlung
+--
+
+LOAD DATA INFILE 'zahlung.csv'
+INTO TABLE zahlung
+FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (GesamtPreis, BestellERID, ZMethodID);
 
 -- --------------------------------------------------------

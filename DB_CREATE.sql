@@ -155,7 +155,7 @@ CREATE TABLE IF NOT EXISTS LIEFERANT
 DROP TABLE IF EXISTS LAGER_EINZELTEILE;
 CREATE TABLE IF NOT EXISTS LAGER_EINZELTEILE
 (
-     Lager_EteileID	    integer	        not null
+     Lager_EteileID	    integer	        not null AUTO_INCREMENT
     ,MinBestand	        integer	        not null	
     ,MaxBestand	        integer	        not null	
     ,Bestand	        integer	        not null
@@ -168,7 +168,7 @@ CREATE TABLE IF NOT EXISTS LAGER_EINZELTEILE
 DROP TABLE IF EXISTS EINZELTEILE;
 CREATE TABLE IF NOT EXISTS EINZELTEILE 
 (   
-     EinzelteileID	    integer     	not null
+     EinzelteileID	    integer     	not null AUTO_INCREMENT
     ,EType	            varchar(50)     not null	
     ,EName	            integer	        not null	
     ,Gewicht	        decimal(8,2)	not null	
