@@ -330,3 +330,23 @@ INTO TABLE lieferdetails
 FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (Lager_LieferID, Anzahl,Stueckpreis, EinzelteileID);
 
 -- --------------------------------------------------------
+
+--
+-- Daten für Tabelle Defekt
+--
+
+LOAD DATA INFILE 'defekte.csv'
+INTO TABLE defekt
+FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (Defekts, ERollerID);
+
+-- --------------------------------------------------------
+
+--
+-- Daten für Tabelle Reparatur
+--
+
+LOAD DATA INFILE 'Reparatur.csv'
+INTO TABLE Reparatur
+FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (ReparaturDatum,DefektID,BearbeiterID,LagerID);
+
+-- --------------------------------------------------------
