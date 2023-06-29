@@ -350,3 +350,13 @@ INTO TABLE Reparatur
 FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (ReparaturDatum,DefektID,BearbeiterID,LagerID);
 
 -- --------------------------------------------------------
+
+--
+-- Daten für Tabelle Reparatur
+--
+
+LOAD DATA INFILE 'Warenausgabe.csv'
+INTO TABLE Warenausgabe
+FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (AnzahlDerTeile,ReparaturID,EinzelteileID);
+
+-- --------------------------------------------------------
