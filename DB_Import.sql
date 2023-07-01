@@ -360,3 +360,50 @@ INTO TABLE Warenausgabe
 FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (AnzahlDerTeile,ReparaturID,EinzelteileID);
 
 -- --------------------------------------------------------
+
+
+--
+-- Daten für Tabelle Fuhrpark
+--
+
+
+INSERT INTO FUHRPARK
+VALUES
+(1, 'VW Crafter', '2023-11-14', 1),
+(2, 'VW Crafter', '2024-02-22', 1),
+(3, 'VW Crafter', '2023-10-01', 1),
+(4, 'VW Crafter', '2023-11-05', 1),
+(5, 'VW Crafter', '2024-02-18', 2),
+(6, 'VW Crafter', '2023-07-30', 2),
+(7, 'VW Crafter', '2023-10-19', 2),
+(8, 'VW Crafter', '2024-05-12', 2),
+(9, 'VW Crafter', '2024-01-25', 3),
+(10, 'VW Crafter', '2023-08-09', 3),
+(11, 'VW Crafter', '2023-08-03', 3),
+(12, 'VW Crafter', '2024-09-22', 3),
+(13, 'VW Crafter', '2023-11-07', 4),
+(14, 'VW Crafter', '2024-08-27', 4),
+(15, 'VW Crafter', '2023-10-15', 4),
+(16, 'VW Crafter', '2023-02-11', 4),
+(17, 'VW Crafter', '2024-09-14', 5),
+(18, 'VW Crafter', '2023-12-23', 5),
+(19, 'VW Crafter', '2023-09-04', 5),
+(20, 'VW Crafter', '2023-12-02', 5);
+
+
+--
+-- Daten für Tabelle Fahrtenbuch
+--
+
+LOAD DATA INFILE 'Fahrtenbuch.csv'
+INTO TABLE Fahrtenbuch
+FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (Fahrtstart,Fahrtende,FirmenwagenID, MitarbeiterID, RollerEingesamelt);
+
+
+--
+-- Daten für Tabelle Haltepunkt
+--
+
+LOAD DATA INFILE 'Haltepunkt.csv'
+INTO TABLE Haltepunkt
+FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (Zeitpunkt, FahrtenbuchID, StandortID);

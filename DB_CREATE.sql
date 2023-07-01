@@ -273,8 +273,8 @@ CREATE TABLE IF NOT EXISTS FAHRTENBUCH
 (
      FahrtenbuchID	    integer	        not null	AUTO_INCREMENT
     ,Fahrtstart	        timestamp	    not null	
-    ,Fahrtende	        timestamp	    not null	
-    ,Fahrtdauer	        timestamp	    not null	-- Berechnet: |Fahrtstart - Fahrtende|
+    ,Fahrtende	        timestamp	        null	
+    ,Fahrtdauer	        time	            null	-- Berechnet: |Fahrtstart - Fahrtende|
     ,FirmenwagenID	    integer	        not null	-- FK, Referenz auf Fuhrpark.FirmenwagenID
     ,MitarbeiterID	    integer	        not null	-- FK, Referenz auf Mitarbeiter.MitarbeiterID
     ,RollerEingesamelt	integer	        not null
