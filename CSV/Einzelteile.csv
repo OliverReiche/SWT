@@ -1,0 +1,51 @@
+1,Batterie,Lithium-Ionen,5000
+2,Motor,Elektromotor,10000
+3,Reifen,Luftreifen,2000
+4,Bremsen,Scheibenbremsen,1500
+5,Lenker,Aluminiumlenker,1000
+6,Sitz,Komfortsitz,2000
+7,Beleuchtung,LED-Scheinwerfer,500
+8,Federung,Vordergabel-Federung,1200
+9,Schutzblech,Kunststoffschutzblech,800
+10,Kettenschutz,Metallkettenschutz,600
+11,Rahmen,Stahlrahmen,8000
+12,Griffe,Gummi-Griffe,200
+13,Stehflaeche,Aluminiumstehflaeche,3000
+14,Gepaecktraeger,Lenker-Gepaecktraeger,1000
+15,Staender,Seitenstaender,500
+16,Kabelbaum,Elektrischer Kabelbaum,700
+17,Controller,Elektronischer Controller,800
+18,Display,LCD-Display,300
+19,Gabelschaft,Stahlgabelschaft,600
+20,Bremshebel,Hydraulische Bremshebel,200
+21,Bremsbelaege,Scheibenbremsbelaege,100
+22,Kurbelarme,Aluminiumkurbelarme,700
+23,Kettenblatt,Stahlkettenblatt,300
+24,Kette,Motorkette,2000
+25,Schaltwerk,Rollerschaltwerk,400
+26,Federbein,Hinteres Federbein,1500
+27,Ladeanschluss,Stecker fuer Ladeanschluss,200
+28,Gepaeckbox,Gepaeckbox fuer Roller,1000
+29,Bremsscheibe,Bremsscheibe fuer Vorderrad,300
+30,Gummimatte,Gummimatte fuer Trittbrett,500
+31,Spiegel,Rueckspiegel,200
+32,Ruecklicht,LED-Ruecklicht,150
+33,Schluesselschalter,Schluesselschalter fuer Zuendung,100
+34,Hupe,Elektrische Hupe,200
+35,Federbeinhalter,Halterung fuer Federbein,400
+36,Schraubensatz,Schraubensatz fuer Roller,500
+37,Ladekabel,Ladekabel fuer Akku,300
+38,Rueckspiegelhalter,Halterung fuer Rueckspiegel,100
+39,Lenkergriffe,Gummi-Lenkergriffe,100
+40,Seitenverkleidung,Verkleidung fuer Seitenbereich,600
+41,Sicherung,Sicherung fuer Elektronik,50
+42,Kettenspanner,Kettenspanner fuer Antrieb,200
+43,Stehtritt,Komfort-Stehtritt,1500
+44,Bremshebelgriff,Griff fuer Bremshebel,100
+45,Gasgriff,Gasgriff fuer Beschleunigung,150
+46,Blinker,LED-Blinker,100
+47,Bremslichtschalter,Schalter fuer Bremslicht,50
+48,Kettenschutzhalter,Halterung fuer Kettenschutz,100
+49,Felge,Aluminiumfelge,1000
+50,Felgenbremse,Mechanische Felgenbremse,300
+51,Batterie,Akku,2000
