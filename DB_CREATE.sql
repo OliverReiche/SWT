@@ -1,13 +1,17 @@
+-- 
+-- Datenbank: ew_db 
+-- erstellt am 02.07.2023
+-- durch Projektgruppe C5
+-- Datenbank mit Tabellen für EcoWheels Verwaltungssystem
+
+-- --------------------------------------------------------
+
 
 DROP DATABASE IF EXISTS EW_DB;
 CREATE DATABASE IF NOT EXISTS EW_DB 
 DEFAULT CHARACTER SET utf8mb4 
 COLLATE utf8mb4_general_ci;
 USE EW_DB;
-
-
-
-
 
 
 DROP TABLE IF EXISTS ZAHLUNGSMETHODE;

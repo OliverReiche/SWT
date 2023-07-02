@@ -1,5 +1,10 @@
+-- 
+-- Datenbank: ew_db 
+-- erstellt am 02.07.2023
+-- durch Projektgruppe C5
+-- Datenbank mit Tabellen für EcoWheels Verwaltungssystem
 
-
+-- --------------------------------------------------------
 
 ALTER TABLE ZAHLUNG
  ADD CONSTRAINT zahlung_bestell_eroller_fk FOREIGN KEY (BestellERID)

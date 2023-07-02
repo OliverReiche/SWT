@@ -1,11 +1,10 @@
--- phpMyAdmin SQL Dump
--- version 5.2.0
--- https://www.phpmyadmin.net/
---
--- Host: 127.0.0.1
--- Erstellungszeit: 01. Jul 2023 um 17:39
--- Server-Version: 10.4.25-MariaDB
--- PHP-Version: 8.1.10
+-- 
+-- Datenbank: ew_db 
+-- erstellt am 02.07.2023
+-- durch Projektgruppe C5
+-- Datenbank mit Tabellen für EcoWheels Verwaltungssystem
+
+-- --------------------------------------------------------
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
