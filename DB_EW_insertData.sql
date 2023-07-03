@@ -37,6 +37,64 @@ insert into REGION values
 (4, 'EAST'),
 (5, 'MIDDLE');
 
+
+-- --------------------------------------------------------
+
+--
+-- Daten für Tabelle ZAHLUNGSMETHODE
+--
+
+insert into ZAHLUNGSMETHODE values
+(1, 20, 'A'),
+(2, 18, 'K');
+
+-- --------------------------------------------------------
+
+--
+-- Daten für Tabelle STANDORT
+-- Import erfolgt über Bulk Import
+-- beim ausführen des Befehls Pfad anpassen!
+
+LOAD DATA INFILE 'standorte.csv' 
+INTO TABLE STANDORT
+FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n'(PLZ, Stadt, Strasse, Sammelpunkt);
+
+-- Übersicht STANDORT:
+-- 1  - 50  + 251  - 450   = Hamburg
+-- 51 - 100 + 451  - 650   = Berlin
+-- 101- 150 + 651  - 850   = Erfurt
+-- 151- 200 + 851  - 1050  = Frankfurt am Main
+-- 201- 250 + 1051 - 1250 = München
+
+-- STANDORTID für Lager: (jeweils erster Eintrag pro Stadt)
+-- Headquarter      = 101 (Erfurt)  
+-- Lager Erfurt     = 101           
+-- Lager Berlin     = 51            
+-- Lager Frankfurt  = 151           
+-- Lager München    = 201           
+-- Lager Hamburg    = 1             
+
+-- Sammelplätze:
+-- Erfurt	: 102-111
+-- Berlin	: 52-61
+-- Frankfurt: 152-161
+-- München	: 202-211
+-- Hamburg	: 2-11
+
+-- --------------------------------------------------------
+
+--
+-- Daten für Tabelle Lager
+--
+
+insert into LAGER (LagerId, RegionId, StandortID)
+values
+(1, 5, 101),
+(2, 4, 51 ),
+(3, 3, 151),
+(4, 2, 201),
+(5, 1, 1  );
+
 -- --------------------------------------------------------
 
 --
@@ -161,61 +219,13 @@ values
 
 -- --------------------------------------------------------
 
-
 --
--- Daten für Tabelle ZAHLUNGSMETHODE
---
-
-insert into ZAHLUNGSMETHODE values
-(1, 20, 'A'),
-(2, 18, 'K');
-
--- --------------------------------------------------------
-
---
--- Daten für Tabelle STANDORT
--- Import erfolgt über Bulk Import
--- beim ausführen des Befehls Pfad anpassen!
-
-LOAD DATA INFILE 'standorte.csv' 
-INTO TABLE STANDORT
-FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n'(PLZ, Stadt, Strasse, Sammelpunkt);
-
--- Übersicht STANDORT:
--- 1  - 50  + 251  - 450   = Hamburg
--- 51 - 100 + 451  - 650   = Berlin
--- 101- 150 + 651  - 850   = Erfurt
--- 151- 200 + 851  - 1050  = Frankfurt am Main
--- 201- 250 + 1051 - 1250 = München
-
--- STANDORTID für Lager: (jeweils erster Eintrag pro Stadt)
--- Headquarter      = 101 (Erfurt)  
--- Lager Erfurt     = 101           
--- Lager Berlin     = 51            
--- Lager Frankfurt  = 151           
--- Lager München    = 201           
--- Lager Hamburg    = 1             
-
--- Sammelplätze:
--- Erfurt	: 102-111
--- Berlin	: 52-61
--- Frankfurt: 152-161
--- München	: 202-211
--- Hamburg	: 2-11
-
--- --------------------------------------------------------
-
---
--- Daten für Tabelle Lager
+-- Daten für Tabelle Kundenkonto
 --
 
-insert into LAGER (LagerId, RegionId, StandortID)
-values
-(1, 5, 101),
-(2, 4, 51 ),
-(3, 3, 151),
-(4, 2, 201),
-(5, 1, 1  );
+LOAD DATA INFILE 'kundenkonto.csv' 
+INTO TABLE kundenkonto
+FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n'(Guthaben);
 
 -- --------------------------------------------------------
 
@@ -227,16 +237,6 @@ values
 LOAD DATA INFILE 'kunden.csv' 
 INTO TABLE kunde
 FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n'(Nachname, Vorname, EmailAdress, Mobilnummer, Geschlecht, LetzteNutzung, Inaktiv, KKontoID, WohnortID);
-
--- --------------------------------------------------------
-
---
--- Daten für Tabelle Kundenkonto
---
-
-LOAD DATA INFILE 'kundenkonto.csv' 
-INTO TABLE kundenkonto
-FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n'(Guthaben);
 
 -- --------------------------------------------------------
 
@@ -310,6 +310,15 @@ FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (GesamtPreis, BestellERID, Z
 
 -- --------------------------------------------------------
 
+--
+-- Daten für Tabelle Lieferdetails
+--
+
+LOAD DATA INFILE 'lieferdetails.csv'
+INTO TABLE lieferdetails
+FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (Lager_LieferID, Anzahl,Stueckpreis, EinzelteileID);
+
+-- --------------------------------------------------------
 
 --
 -- Daten für Tabelle Lieferung
@@ -319,15 +328,6 @@ LOAD DATA INFILE 'lieferung.csv'
 INTO TABLE lieferung
 FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (LieferDatum, GesamtPreis, LieferdetailsID);
 
--- --------------------------------------------------------
-
---
--- Daten für Tabelle Lieferdetails
---
-
-LOAD DATA INFILE 'lieferdetails.csv'
-INTO TABLE lieferdetails
-FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (Lager_LieferID, Anzahl,Stueckpreis, EinzelteileID);
 
 -- --------------------------------------------------------
 
