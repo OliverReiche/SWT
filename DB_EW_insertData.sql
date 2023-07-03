@@ -361,11 +361,9 @@ FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (AnzahlDerTeile,ReparaturID,
 
 -- --------------------------------------------------------
 
-
 --
 -- Daten für Tabelle Fuhrpark
 --
-
 
 INSERT INTO FUHRPARK
 VALUES
@@ -390,6 +388,7 @@ VALUES
 (19, 'VW Crafter', '2023-09-04', 5),
 (20, 'VW Crafter', '2023-12-02', 5);
 
+-- --------------------------------------------------------
 
 --
 -- Daten für Tabelle Fahrtenbuch
@@ -399,6 +398,7 @@ LOAD DATA INFILE 'Fahrtenbuch.csv'
 INTO TABLE Fahrtenbuch
 FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (Fahrtstart,Fahrtende,FirmenwagenID, MitarbeiterID, RollerEingesamelt);
 
+-- --------------------------------------------------------
 
 --
 -- Daten für Tabelle Haltepunkt
@@ -408,6 +408,202 @@ LOAD DATA INFILE 'Haltepunkt.csv'
 INTO TABLE Haltepunkt
 FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (Zeitpunkt, FahrtenbuchID, StandortID);
 
+-- --------------------------------------------------------
+
+-- die folgenden Prozeduren dienen der Ergänzung einiger Datensätze/Felder 
+
+DELIMITER $$
+CREATE OR REPLACE PROCEDURE p_SetLetzteZahlung(IN inKundeID int)
+BEGIN
+DECLARE noKundeFound CONDITION for SQLSTATE '45000';
+DECLARE vNutzung date;
+
+SELECT LetzteNutzung into vNutzung
+from kunde
+where KundeID=inKundeID;
+IF ROW_COUNT()=0
+		then SIGNAL noKundeFound
+		set MESSAGE_TEXT = 'Es wurde kein Kunde mit dieser ID gefunden!';
+ELSE
+	UPDATE Kundenkonto Set LetzteZahlung = vNutzung
+	where KKontoID=inKundeID;
+
+	END if;
+END$$
+DELIMITER ;
+
+--
+-- Testcase
+--
+call p_SetLetzteZahlung(1); --> Setzt LetzteZahlung auf 2022-07-07
+
+
+DELIMITER $$
+create or replace procedure p_SetAllLetzteZahlung()
+BEGIN
+	DECLARE vID int;
+	DECLARE vDone BOOLEAN DEFAULT FALSE;
+	
+	DECLARE vKundeCur CURSOR
+	FOR 
+	select KundeID
+	from Kunde;
+
+	DECLARE CONTINUE HANDLER FOR 1329 SET vDone = TRUE;
+	
+	OPEN vKundeCur;
+	
+	FETCH vKundeCur into vID;	
+	
+	setNutzungLoop:LOOP
+	call p_SetLetzteZahlung(vID);	
+	
+		FETCH vKundeCur into vID;
+			IF vDone
+				THEN LEAVE setNutzungLoop;
+			END IF;			
+		END LOOP;
+		CLOSE vKundeCur;			
+END $$
+DELIMITER ;
+
+-- Test
+call p_SetAllLetzteZahlung();
+
+
+
+DELIMITER $$
+CREATE OR REPLACE PROCEDURE p_SetGesamtPreisLieferung(IN inLieferungID int)
+BEGIN
+DECLARE noZahlungFound CONDITION for SQLSTATE '45000';
+DECLARE vGesamtPreis decimal(6,2);
+DECLARE vStückZahl int;
+DECLARE vStückpreis decimal(6,2);
+
+SELECT Anzahl into vStückZahl
+from lieferung l join lieferdetails ld on l.lieferdetailsID = ld.lieferdetailsID
+where l.LieferungID = inLieferungID;
+
+SELECT Stueckpreis into vStückpreis 
+from lieferung l join lieferdetails ld on l.lieferdetailsID = ld.lieferdetailsID
+where l.LieferungID = inLieferungID;
+
+IF ROW_COUNT()=0
+		then SIGNAL noZahlungFound
+		set MESSAGE_TEXT = 'Es wurde keine Lieferung mit dieser ID gefunden!';
+ELSE
+	UPDATE Lieferung Set GesamtPreis = (vStückZahl * vStückpreis)
+	where LieferungID = inLieferungID;
+
+	END if;
+END$$
+DELIMITER ;
+
+-- Test
+call p_SetGesamtPreisLieferung(1); 
+
+
+DELIMITER $$
+create or replace procedure p_SetAllGesamtPreisLieferung()
+BEGIN
+	DECLARE vID int;
+	DECLARE vDone BOOLEAN DEFAULT FALSE;
+	
+	DECLARE vLieferungCur CURSOR
+	FOR 
+	select LieferungID
+	from Lieferung;
+
+	DECLARE CONTINUE HANDLER FOR 1329 SET vDone = TRUE;
+	
+	OPEN vLieferungCur;
+	
+	FETCH vLieferungCur into vID;	
+	
+	setGesamtPreisLoop:LOOP
+	call p_SetGesamtPreisLieferung(vID);	
+	
+		FETCH vLieferungCur into vID;
+			IF vDone
+				THEN LEAVE setGesamtPreisLoop;
+			END IF;			
+		END LOOP;
+		CLOSE vLieferungCur;			
+END $$
+DELIMITER ;
+-- Test
+call p_SetAllGesamtPreisLieferung(); -- ok
+
+
+
+DELIMITER $$
+CREATE OR REPLACE PROCEDURE p_SetGesamtPreisERollerBuchung(IN inZahlungID int)
+BEGIN
+DECLARE noZahlungFound CONDITION for SQLSTATE '45000';
+DECLARE vGesamtPreis decimal(6,2);
+DECLARE vNutzungsDauer int;
+DECLARE vMinutzenSatz int;
+
+SELECT MINUTE(Nutzdauer) into vNutzungsDauer
+from zahlung z join bestellung_eroller be on z.BestellERID = be.BestellERID
+where z.ZahlungID = inZahlungID;
+
+SELECT MinutenSatz into vMinutzenSatz
+from zahlung z join Zahlungsmethode zm on z.ZMethodID = zm.ZMethodID
+where z.ZahlungID = inZahlungID;
+
+IF ROW_COUNT()=0
+		then SIGNAL noZahlungFound
+		set MESSAGE_TEXT = 'Es wurde keine Zahlung mit dieser ID gefunden!';
+ELSE
+	UPDATE Zahlung Set GesamtPreis = ((vNutzungsDauer * vMinutzenSatz) / 100)
+	where ZahlungID = inZahlungID;
+
+	END if;
+END$$
+DELIMITER ;
+
+-- Test
+call p_SetGesamtPreisERollerBuchung(1); -- setzt GesamtPreis auf 5,2 € bei ZahlungsID 1
+                          -- Fahrtdauer 26min - Preis App = 20Cent/Minute 20*26 = 520 Cent / 100 = 5,2€
+
+
+DELIMITER $$
+create or replace procedure p_SetAllGesamtPreisERollerBuchung()
+BEGIN
+	DECLARE vID int;
+	DECLARE vDone BOOLEAN DEFAULT FALSE;
+	
+	DECLARE vZahlungCur CURSOR
+	FOR 
+	select ZahlungID
+	from Zahlung;
+
+	DECLARE CONTINUE HANDLER FOR 1329 SET vDone = TRUE;
+	
+	OPEN vZahlungCur;
+	
+	FETCH vZahlungCur into vID;	
+	
+	setGesamtPreisLoop:LOOP
+	call p_SetGesamtPreisERollerBuchung(vID);	
+	
+		FETCH vZahlungCur into vID;
+			IF vDone
+				THEN LEAVE setGesamtPreisLoop;
+			END IF;			
+		END LOOP;
+		CLOSE vZahlungCur;			
+END $$
+DELIMITER ;
+-- Test
+call p_SetAllGesamtPreisERollerBuchung(); -- ok
+
+-- --------------------------------------------------------
 
 -- Insert´s für White Box tests 
--- ...
+
+-- Daten für Tests (Richard)
+
+
+-- --------------------------------------------------------
