@@ -407,3 +407,7 @@ FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (Fahrtstart,Fahrtende,Firmen
 LOAD DATA INFILE 'Haltepunkt.csv'
 INTO TABLE Haltepunkt
 FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (Zeitpunkt, FahrtenbuchID, StandortID);
+
+
+-- Insert´s für White Box tests 
+-- ...
