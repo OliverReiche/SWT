@@ -139,7 +139,7 @@ CREATE TABLE IF NOT EXISTS LAGER
 DROP TABLE IF EXISTS LAGER_LIEFERANT;
 CREATE TABLE IF NOT EXISTS LAGER_LIEFERANT 
 (
-     Lager_LieferID	    integer	        not null	
+     Lager_LieferID	    integer	        not null	AUTO_INCREMENT
     ,LieferantID	    integer	        not null	-- FK, Referenz auf Lieferant.LieferantID	
     ,LagerID	        integer	        not null	-- FK, Referenz auf Lager.LagerID
     ,CONSTRAINT lager_lieferant_pk PRIMARY KEY (Lager_LieferID)
@@ -149,7 +149,7 @@ CREATE TABLE IF NOT EXISTS LAGER_LIEFERANT
 DROP TABLE IF EXISTS LIEFERANT;
 CREATE TABLE IF NOT EXISTS LIEFERANT 
 (
-     LieferantID	    integer	        not null	
+     LieferantID	    integer	        not null	AUTO_INCREMENT
     ,LieferantName	    varchar(50)	    not null	Unique
     ,LetzteLieferung	date	        not null	
     ,CONSTRAINT liefernat_pk PRIMARY KEY (LieferantID)

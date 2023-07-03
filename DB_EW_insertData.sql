@@ -248,6 +248,13 @@ LOAD DATA INFILE 'Lieferant.csv'
 INTO TABLE Lieferant
 FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n' (LieferantID, LieferantName, LetzteLieferung);
 
+
+-- entfernt führende leerzeichen, wichtig für spätere Abfragen
+
+UPDATE Lieferant
+SET LieferantName = SUBSTR(LieferantName, LENGTH(LieferantName) - LENGTH(LTRIM(LieferantName)) + 1)
+WHERE LieferantName LIKE ' %';
+
 -- --------------------------------------------------------
 
 --
@@ -604,6 +611,26 @@ call p_SetAllGesamtPreisERollerBuchung(); -- ok
 -- Insert´s für White Box tests 
 
 -- Daten für Tests (Richard)
+
+insert into Einzelteile (EType, EName, Gewicht)
+values ('Display', 'OLED-Display', 400.00);
+
+insert into lager_einzelteile (MinBestand, MaxBestand, Bestand, LagerID, EinzelteileID)
+values (200,400,300,1,52);
+
+insert into lieferant (LieferantName, LetzteLieferung)
+values ('Hermes', '2023-07-03');
+
+insert into lager_lieferant (LieferantID, LagerID)
+values(76,1);
+
+ALTER TABLE Lieferdetails AUTO_INCREMENT = 401;
+insert into lieferdetails (Anzahl, Stueckpreis, Lager_LieferID, EInzelteileID)
+values (20, 100.00, 376, 52);
+
+ALTER TABLE lieferung AUTO_INCREMENT = 401;
+insert into lieferung (LieferDatum, GEsamtPreis, LieferdetailsID)
+values ('2023-07-03', 2000.00, 401);
 
 
 -- --------------------------------------------------------
