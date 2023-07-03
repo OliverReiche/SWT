@@ -271,17 +271,114 @@ select fn_GetLagerLieferantID('Hamburg', 'Hermes');
 /********************************************************************************************************/
 
 -- /F20.1.2.9./ Lieferanten im Lager registrieren - p_NewLagerLieferant 
--- Diese Prozedur erwarten als Übergabe einen Lieferantennamen und einen Stadtnamen. Innerhalb der Funktion werden durch die Aufrufe der Funktionen fn_GetLagerId und fn_GetLieferantId die LagerId und LieferantenId ermittelt. Die Prozedur fügt einen neuen Datensatz in die Tabelle LAGER_LIEFERANT ein, sofern der Lieferant für das jeweilige Lager noch nicht registriert ist. Dies wird mit der Funktion fn_GetLagerLieferantId überprüft.
+
+-- diese Prozedur erwartet als Übergabe einen Lieferantennamen sowie einen Stadtnamen
+-- Innerhalb der Funktion werden durch die Aufrufe der Funktionen fn_GetLagerId und fn_GetLieferantId die LagerId und LieferantenId ermittelt.
+-- Die Prozedur fügt einen neuen Datensatz in die Tabelle LAGER_LIEFERANT ein, sofern der Lieferant für das jeweilige Lager noch nicht registriert ist. Dies wird mit der Funktion fn_GetLagerLieferantId überprüft.
+
+DELIMITER $$
+CREATE OR REPLACE procedure p_NewLagerLieferant(inLieferantName varchar(50), inStadt varchar(30))
+BEGIN
+    if (fn_GetLagerLieferantID(inStadt, inLieferantName)) = -1
+        then INSERT into lager_lieferant (Lager_LieferID, LieferantID, LagerID)
+        VALUES (testid, fn_GetLieferantID(inLieferantName), fn_GetLagerID(inStadt));
+    else
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Der Lieferant ist schon in diesem Lager registriert!';
+    end if;
+END $$
+DELIMITER ;
+
+-- Testfälle
+-- 1. Fall erwartet einen Neuen Eintrag in der Lager_Lieferant Tabelle(377, 76, 2)
+call p_NewLagerLieferant('Hermes', 'Berlin');
+
+-- 2. Fall erwartet eine Fehlermeldung, da der Lieferant Hermes in Erfurt schon registriert ist
+call p_NewLagerLieferant('Hermes', 'Erfurt');
+
+-- 3. Fall erwartet eine Fehlermeldung, da im System keinen Lieferanten DHL gibt
+call p_NewLagerLieferant('DHL','Erfurt');
+
+-- 4. Fall erwartet eine Fehlermeldung, da es in London kein Lager gibt
+call p_NewLagerLieferant('Hermes','London');
 
 /********************************************************************************************************/
 
 -- /F20.1.2.10./ Letzte Lieferung aktualisieren - p_UpdateLieferantLetzteLieferung
 -- Diese Funktion erwartet als Übergabe einen Lieferantennamen sowie ein Datum (Format: yyyy-mm-dd). Innerhalb der Prozedur wird über den Aufruf der Funktion fn_GetLieferantId die LieferantenId ermitteln. Die Prozedur aktualisiert das letzte Lieferungsdatum eines Lieferanten, welcher durch die LieferantenId referenziert wird. Dass der Lieferant registriert ist, wird über die Funktion fn_GetLieferantId überprüft.
 
+DELIMITER $$
+CREATE OR REPLACE procedure p_UpdateLieferantLetzteLieferung(inLieferantName varchar(50), inDatum date)
+BEGIN
+    if (inDatum < '2015-01-01')
+        then SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Das Lieferdatum liegt vor der Firmengründung! Bitte die Eingabe überprüfen!';
+    end if;
+
+    if (fn_GetLieferantID(inLieferantName)) = -1
+        then SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Es existiert kein Lieferant mit diesem Namen!';
+    elseif inDatum < (select LetzteLieferung from Lieferant where LieferantName = inLieferantName)
+        then SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Das neue LetzeLieferungsdatum darf nicht länger her sein als das LetzeLieferungsdatum! Bitte Eingabe prüfen!';
+    else
+        Update lieferant
+        set LetzteLieferung = inDatum
+        where LieferantName = inLieferantName;
+    end if;
+END $$
+DELIMITER ;
+
+-- Testfälle
+-- 1. Fall aktualisiert das LetzteLieferung Datum des Lieferanten Amazon auf den 2023-07-03
+call p_UpdateLieferantLetzteLieferung('Amazon', '2023-07-03');
+
+-- 2. Fall erwartet eine Fehlermeldung, da der Lieferant Super Express nicht im System registriert ist
+call p_UpdateLieferantLetzteLieferung('Super Express', '2023-07-03');
+
+-- 3. Fall erwartet eine Fehlermeldung, da das neue LetzteLieferungsdatum nicht länger her sein darf als das LetzeLieferungsdatum
+call p_UpdateLieferantLetzteLieferung('Elite Imports','2023-03-24');
+
+-- 4. Fall erwartet eine Fehlermeldung, da das Lieferungsdatum nicht vor der Firmeneröffnung liegen darf
+call p_UpdateLieferantLetzteLieferung('Elite Imports','2014-05-21');
+
 /********************************************************************************************************/
 
--- /F20.1.2.11./ Lagerbestand aktualisieren - p_UpdateLagerbestand 
--- Diese Prozedur erwartet als Übergabe einen Stadtnamen, eine Einzelteilzeichnung sowie die Anzahl der gelieferten Artikel. Innerhalb der Prozedur wird durch Aufruf der Funktionen fn_GetLagerID sowie fn_GetEinzelteilID die Werte für die LagerId und EinzelteilId ermittelt. Nachdem diese Werte ermitteln wurden wird innerhalb noch die Funktion fn_GetLagerEinzelteileID aufgerufen, welche die Lager_EinzelteilId ermitteln. Über die Funktionen fn_GetBestand sowie fn_GetMaxBestand wird der aktuelle Bestand als auch der Maximalbestand ermittelt. Die Prozedur ruft die Funktion fn_BerechneNeuenBestand mit den benötigten Übergabewerten auf und aktualisiert den Bestand des Artikels, welcher über die Lager_EinzelteilId referenziert wird. Dass der Artikel in dem Lager registriert ist, wird über die Funktion fn_GetLagerEinzelteileID geprüft.
+-- /F20.1.2.11./ Lagerbestand aktualisieren - p_UpdateLagerbestand
+-- Diese Prozedur erwartet als Übergabe einen Stadtnamen, eine Einzelteilzeichnung sowie die Anzahl der gelieferten Artikel
+-- Innerhalb der Prozedur wird durch Aufruf der Funktion fn_GetLagerEinzelteileID die Lager_EteileID ermittelt
+-- Über die Funktionen fn_GetBestand wird der aktuelle Bestand ermittelt
+-- Die Prozedur berechnet den neuen Lagerbestand über den Aufruf der Funktion fn_BerechneNeuenBestand mit den benötigten Übergabewerten 
+-- über die Funktion fn_KontrolliereBestand wird geprüft ob ausreichend kapazität im Lager vorhanden ist
+-- die Prozedur aktualisiert den Bestand des Artikels, welcher über die Lager_EinzelteilId referenziert wird
+-- Dass der Artikel in dem Lager registriert ist, wird über die Funktion fn_GetLagerEinzelteileID geprüft.
+
+DELIMITER $$
+CREATE OR REPLACE procedure p_UpdateLagerbestand(inStadt varchar(30), inEinzeilteilBezeichnung varchar(50), inAnzahl int)
+BEGIN
+    declare vLagerEteileID int;
+    declare vNeuerBestand int;
+
+    set vLagerEteileID = fn_GetLagerEinzelteileID(inStadt, inEinzeilteilBezeichnung);
+    set vNeuerBestand = (fn_GetBestand(inStadt, inEinzeilteilBezeichnung) + inAnzahl);
+
+    if inAnzahl <= 0
+        then SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Anzahl darf nicht negativ oder null sein!';
+    end if;
+
+    if fn_KontrolliereBestand(inStadt, inEinzeilteilBezeichnung, vNeuerBestand) = 1
+        then Update lager_einzelteile
+             set Bestand = vNeuerBestand
+             where Lager_ETeileID = vLagerEteileID;
+    end if;
+END $$
+DELIMITER ;
+
+-- Testfälle
+-- 1. Fall aktualisiert den Lagerbestand Hydraulischen Bremshebel in Erfurt auf 600
+call p_UpdateLagerbestand('Erfurt', 'Hydraulische Bremshebel', 66);
+
+-- 2. Fall gibt Fehlermeldung zurück, Lagerkapazität nicht ausreichend
+call p_UpdateLagerbestand('Erfurt', 'Aluminiumkurbelarme', 600);
+
+-- 3. Fall gibt Fehlermeldung zurück, Anzahl darf nicht negativ oder null sein
+call p_UpdateLagerbestand('Erfurt', 'Aluminiumkurbelarme', -10);
 
 /********************************************************************************************************/
 
@@ -315,18 +412,18 @@ select fn_GetGesamtPreisLieferung(20,5.00);
 /********************************************************************************************************/
 
 -- /F20.1.2.14./ Mindestbestand ermitteln - fn_GetMindestbestand 
--- diese Funktion sucht mittels Eingabe (Lager_ETeileID) den jeweiligen Mindestbestand und gibt diesen zurück
+-- diese Funktion sucht mittels Eingabe (Stadtnamen, Einzelteilbezeichnung) den jeweiligen Mindestbestand und gibt diesen zurück
 -- dass das Einzelteil im Lager registriert ist, wird über die Funktion fn_GetLagerEinzelteileID überprüft
 
 DELIMITER $$
-CREATE OR REPLACE function fn_GetMindestBestand(inLagerETeileID int)
+CREATE OR REPLACE function fn_GetMindestBestand(inStadt varchar(30), inEinzeilteilBezeichnung varchar(50))
 returns int
 BEGIN
     declare vOutMindestBestand int;
 
     select MinBestand into vOutMindestBestand
     from lager_einzelteile
-    where Lager_ETeileID = inLagerETeileID;
+    where Lager_ETeileID = fn_GetLagerEinzelteileID(inStadt, inEinzeilteilBezeichnung);
 
     return vOutMindestBestand;
 END $$
@@ -334,23 +431,23 @@ DELIMITER ;
 
 -- Testfälle
 -- 1. Fall erwartet 220 als Rückgabe
-select fn_GetMindestBestand(1);
+select fn_GetMindestBestand('Erfurt', 'Lithium-Ionen');
 
 /********************************************************************************************************/
 
 -- /F20.1.2.15./ Aktuellen Bestand ermitteln - fn_GetBestand 
--- diese Funktion sucht mittels Eingabe (Lager_ETeileID) den jeweiligen Bestand und gibt diesen zurück
+-- diese Funktion sucht mittels Eingabe (Stadtnamen, Einzelteilbezeichnung) den jeweiligen Mindestbestand und gibt diesen zurück
 -- dass das Einzelteil im Lager registriert ist, wird über die Funktion fn_GetLagerEinzelteileID überprüft
 
 DELIMITER $$
-CREATE OR REPLACE function fn_GetBestand(inLagerETeileID int)
+CREATE OR REPLACE function fn_GetBestand(inStadt varchar(30), inEinzeilteilBezeichnung varchar(50))
 returns int
 BEGIN
     declare vOutBestand int;
-    
+
     select Bestand into vOutBestand
     from lager_einzelteile
-    where Lager_ETeileID = inLagerETeileID;
+    where Lager_ETeileID = fn_GetLagerEinzelteileID(inStadt, inEinzeilteilBezeichnung);
 
     return vOutBestand;
 END $$
@@ -358,36 +455,49 @@ DELIMITER ;
 
 -- Testfälle
 -- 1. Fall erwartet 354 als Rückgabe
-select fn_GetBestand(1);
+select fn_GetBestand('Erfurt', 'Lithium-Ionen');
 
 /********************************************************************************************************/
 
 -- /F20.1.2.16./ Maximalbestand ermitteln - fn_GetMaxBestand 
--- diese Funktion sucht mittels Eingabe (Lager_ETeileID) den jeweiligen Maximalbestand und gibt diesen zurück
+-- diese Funktion sucht mittels Eingabe (Stadtnamen, Einzelteilbezeichnung) den jeweiligen Mindestbestand und gibt diesen zurück
 -- dass das Einzelteil im Lager registriert ist, wird über die Funktion fn_GetLagerEinzelteileID überprüft
 
 DELIMITER $$
-CREATE OR REPLACE function fn_GetMaxBestand(inLagerETeileID int)
+CREATE OR REPLACE function fn_GetMaxBestand(inStadt varchar(30), inEinzeilteilBezeichnung varchar(50))
 returns int
 BEGIN
-    declare vOutMaxBestand int;
-    
-    select MaxBestand into vOutMaxBestand
-    from lager_einzelteile
-    where Lager_ETeileID = inLagerETeileID;
+    declare vOutMaximalBestand int;
 
-    return vOutMaxBestand;
+    select MaxBestand into vOutMaximalBestand
+    from lager_einzelteile
+    where Lager_ETeileID = fn_GetLagerEinzelteileID(inStadt, inEinzeilteilBezeichnung);
+
+    return vOutMaximalBestand;
 END $$
 DELIMITER ;
 
 -- Testfälle
 -- 1. Fall erwartet 520 als Rückgabe
-select fn_GetMaxBestand(1);
+select fn_GetMaxBestand('Erfurt', 'Lithium-Ionen');
 
 /********************************************************************************************************/
 
--- /F20.1.2.17./ Neuen Restbestand ermitteln - fn_BerechneNeuenBestand 
--- Diese Funktion erwartet als Eingabe den aktuellen Bestand sowie die Anzahl der gelieferten Artikel und gibt die Summe dieser beiden Werte zurück. 
+-- /F20.1.2.17./ Neuen Restbestand ermitteln - fn_BerechneNeuenBestand
+-- diese Funktion sucht berechnet mittels der Eingabe (Stadtname, Einzelteilbezeichnung, Anzahl) den neuen Lagerbestand
+-- innerhalb der Funktion wird über die FUnktion fn_GetBestand der aktuelle BEstand ermittelt
+
+DELIMITER $$
+CREATE OR REPLACE function fn_BerechneNeuenBestand(inStadt varchar(30), inEinzeilteilBezeichnung varchar(50), inAnzahl int)
+returns int
+BEGIN
+    return (fn_GetBestand(inStadt, inEinzeilteilBezeichnung) + inAnzahl);
+END $$
+DELIMITER ;
+
+-- Testfälle
+-- 1. Fall erwartet 500 als Rückgabe
+select fn_BerechneNeuenBestand('Erfurt', 'Metallkettenschutz', 34)
 
 /********************************************************************************************************/
 
@@ -412,4 +522,31 @@ select fn_GetMaxBestand(1);
 /********************************************************************************************************/
 
 -- /F20.1.2.22./ Neuen Restbestand überprüfen - fn_KontrolliereBestand
--- Diese Funktion erwartet als Eingabe einen Stadtnamen, eine Einzelteilbezeichnung sowie einen neuen Restbestand. Innerhalb der Funktion wird durch die Aufrufe der Funktionen fn_GetLagerId sowie fn_GetEinzelteilId, die LagerId und die EinzelzeilId ermitteln. Durch übergabe der Id´s an die Funktion fn_GetLagerEinzelteilId wird die Lager_EinzelteilId ermitteln. Innerhalb der Funktion wird die Funktion fn_GetMaxBestand aufgerufen und der zurückgelieferte Wert wird mit dem neuen Restbestand verglichen. Ist der neue Restbestand größer als der Maximalbestand, soll der neue Bestand auf den Maximalbestand gesetzt werden und es soll eine Fehlermeldung ausgegeben werden, in welcher die Anzahl der überschüssigen Artikel vermerkt wird.
+-- Diese Funktion erwartet als Eingabe einen Stadtnamen, eine Einzelteilbezeichnung sowie einen neuen Restbestand
+-- Innerhalb der Funktion wird durch die Aufrufe der Funktionen fn_GetLagerId sowie fn_GetEinzelteilId, die LagerId und die EinzelzeilId ermitteln
+-- Durch übergabe der Id´s an die Funktion fn_GetLagerEinzelteilId wird die Lager_EinzelteilId ermitteln
+-- Innerhalb der Funktion wird die Funktion fn_GetMaxBestand aufgerufen und der zurückgelieferte Wert wird mit dem neuen Restbestand verglichen
+-- Ist der neue Restbestand größer als der Maximalbestand, soll der neue Bestand auf den Maximalbestand gesetzt werden und es soll eine Fehlermeldung ausgegeben werden
+-- in welcher die Anzahl der überschüssigen Artikel vermerkt wird.
+
+DELIMITER $$
+CREATE OR REPLACE function fn_KontrolliereBestand(inStadt varchar(30), inEinzeilteilBezeichnung varchar(50), inNeuerBestand int)
+returns int
+BEGIN
+    declare vOut int;
+
+    if ((fn_GetMaxBestand(inStadt, inEinzeilteilBezeichnung)) < inNeuerBestand) 
+        then SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Nicht genügend Kapazität im Lager vorhanden!';         
+    end if;
+
+    set vOut = 1;
+    return vOut;
+END $$
+DELIMITER ;
+
+-- Testfälle
+-- 1. Fall erwartet Rückgabe 1
+select fn_KontrolliereBestand('Erfurt', 'Aluminiumlenker', 700);
+
+-- 2. Fall erwartet Fehlermeldung, da neuer Bestand den Maximalbestand überschreitet
+select fn_KontrolliereBestand('Erfurt', 'Aluminiumlenker', 900);
