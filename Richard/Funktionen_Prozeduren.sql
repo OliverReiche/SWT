@@ -383,7 +383,39 @@ call p_UpdateLagerbestand('Erfurt', 'Aluminiumkurbelarme', -10);
 /********************************************************************************************************/
 
 -- /F20.1.2.12./ Lieferdetails-Eintrag anlegen - p_NewLieferDetails 
--- Diese Prozedur erwartet als Übergabe eine Anzahl, einen Stückpreis, einen Stadtnamen, einen Lieferantennamen sowie eine Einzelteilbezeichnung. Innerhalb der Prozedur wird durch die Aufrufe der Funktionen fn_GetLagerId die LagerId und fn_GetLieferantId die LieferantId ermitteln. Durch den Aufruf der Funktion fn_GetLagerLieferantId wird mittels der Übergabe der zuvor Ermittelten Id ́s die Lager_LieferId bereitgestellt. Außerdem wird in der Prozedur noch geprüft, ob es sich um eine Roller Lieferung oder um eine Einzelteil Lieferung handelt. Bei einer Roller-Lieferung wird die automatisch erzeugte ID genutzt für den neuen Tabelleneintrag, bei Einzelzeilen wird durch den Aufruf der Funktion fn_GetEinzelteilId die EinzelteilId ermittelt. Die Prozedur fügt mit den ermittelten Daten einen neuen Datensatz in der Tabelle LIEFERDETAILS ein.
+-- Diese Prozedur erwartet als Übergabe eine Anzahl, einen Stückpreis, einen Stadtnamen, einen Lieferantennamen sowie eine Einzelteilbezeichnung
+-- Innerhalb der Prozedur wird durch den Aufruf der Funktion fn_GetLagerLieferID die Lager_LieferID ermitteln
+-- dass der Lieferant beziehungsweise das Einzelteil für das Lager registriert ist wird über die Funktionen fn_GetLagerLieferantID sowie fn_GetLagerEinzelteileID überprüft
+-- die Prozedur fügt einen neuen Datensatz in der Tabelle LIEFERDETAILS ein.
+
+DELIMITER $$
+CREATE OR REPLACE procedure p_NewLieferDetails(inAnzahl int, inStueckpreis decimal(8,2), inStadt varchar(30), inLieferantName varchar(50), inEinzeilteilBezeichnung varchar(100))
+BEGIN
+    if fn_GetLagerLieferantID(inStadt, inLieferantName) = -1
+        then SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Lieferant nicht für dieses Lager registriert!';
+    elseif fn_GetEinzelteilID(inEinzeilteilBezeichnung) = -1
+        then SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Kein Einzelteil mit dieser Bezeichnung registriert!';
+    elseif fn_GetLagerEinzelteileID(inStadt, inEinzeilteilBezeichnung) = -1
+        then SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Kein Einzelteil mit dieser Bezeichnung im Lager registriert!';
+    else
+        Insert into Lieferdetails (Anzahl, Stueckpreis, Lager_LieferID, EinzelteileId)
+        VALUES (inAnzahl, inStueckpreis, fn_GetLagerLieferantID(inStadt, inLieferantName), fn_GetEinzelteilID(inEinzeilteilBezeichnung));
+    end if;
+END $$
+DELIMITER ;
+
+-- Testfälle
+-- 1. Fall erwartet neuen Eintrag in der Lieferdetails Tabelle (402, 10, 50.00, 376, 52)
+call p_NewLieferDetails(10,50.00, 'Erfurt', 'Hermes', 'OLED-Display');
+
+-- 2. Fall erwartet Fehlermeldung, da das Einzelteil nicht im Lager registriert ist
+call p_NewLieferDetails(20,50.00,'Berlin', 'Hermes', 'OLED-Display');
+
+-- 3. Fall erwartet Fehlermeldung, da der Lieferant nicht im Lager registriert ist
+call p_NewLieferDetails(10,50.00, 'Hamburg', 'Amazon', 'OLED-Display');
+
+-- 4. Fall erwartet Fehlermeldung, da kein Einzelteil mit so einem Namen registriert ist
+call p_NewLieferDetails(10,50.00, 'Erfurt', 'Hermes', 'Felgenschwamm');
 
 /********************************************************************************************************/
 
@@ -407,7 +439,23 @@ select fn_GetGesamtPreisLieferung(20,5.00);
 /********************************************************************************************************/
 
 -- /F20.1.2.13./ Neue Lieferung anlegen - p_NewLieferung 
--- Diese Prozedur erwartet als Übergabe ein Lieferdatum, einen Gesamtpreis sowie eine LieferdetailsId und fügt einen neuen Datensatz in der Tabelle LIEFERUNG ein. 
+-- diese Prozedur erwartet als Übergabe ein Lieferdatum, eine Anzahl sowie einen Stückpreis
+-- sie erstellt einen neuen Datensatz in der Tballe LIEFERUNG
+
+DELIMITER $$
+CREATE OR REPLACE procedure p_NewLieferung (inLieferDatum date, inAnzahl int, inStueckpreis decimal(8,2))
+BEGIN
+    declare vLetzteLieferdetailsID int;
+    set vLetzteLieferdetailsID = (select MAX(LieferdetailsID) from Lieferdetails);
+
+    Insert into lieferung (LieferDatum, GesamtPreis, LieferdetailsID)
+    VALUES (inLieferDatum, fn_GetGesamtPreisLieferung(inAnzahl, inStueckpreis), vLetzteLieferdetailsID);
+END $$
+DELIMITER ;
+
+-- Testfälle
+-- 1. Fall erwartet neuen Eintrag in der Tabelle Lieferung (402, 2023-07-03, 500.00, 402)
+call p_NewLieferung('2023-07-03', 10, 50.00);
 
 /********************************************************************************************************/
 
@@ -509,6 +557,19 @@ select fn_BerechneNeuenBestand('Erfurt', 'Metallkettenschutz', 34)
 -- /F20.1.2.19./ Prüfen ob Roller-Lieferung - fn_IstRollerLieferung
 -- Diese Funktion erwartet als Übergabe eine Einzelteilbezeichnung und dient der Kategorisierung des Wareneinganges. Sie liefert den Wahrheitswert True, wenn es sich beim Wareneingang um einen Roller handelt, sonst False zurück.
 
+DELIMITER $$
+CREATE OR REPLACE function fn_IstRollerLieferung(inEinzeilteilBezeichnung varchar(50))
+returns int
+BEGIN
+    declare vOut int;
+    set vOut = 1;
+    if inEinzeilteilBezeichnung = 'Roller'
+        then set vOut = 0;
+    end if;
+    return vOut;
+END $$
+DELIMITER ;
+
 /********************************************************************************************************/
 
 -- /F20.1.2.20./ Roller-Eintrag anlegen - p_NewRoller
@@ -550,3 +611,20 @@ select fn_KontrolliereBestand('Erfurt', 'Aluminiumlenker', 700);
 
 -- 2. Fall erwartet Fehlermeldung, da neuer Bestand den Maximalbestand überschreitet
 select fn_KontrolliereBestand('Erfurt', 'Aluminiumlenker', 900);
+
+/********************************************************************************************************/
+
+-- /F20.1.2./ Wareneingang neu anlegen - Prozedur p_CreateNewWareneingang
+-- diese Funktion erwartet als Übergabe einen Stadtnamen, Lieferantennamen, eine Einzelteilbezeichnung, eine Anzahl, einen Stückpreis, einen Mindestbestand, Maximalbestand, ein Gewicht 
+DELIMITER $$
+CREATE OR REPLACE procedure p_CreateNewWareneingang(inStadt varchar(30), inEinzeilteilBezeichnung varchar(50), inAnzahl int, inStueckpreis decimal (8,2), inMindestBestand int, inMaximalBestand int, inGewicht decimal (5,2))
+BEGIN
+
+    if (fn_IstRollerLieferung(inEinzeilteilBezeichnung)) = 0
+        then SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Roller Lieferungen können derzeit noch nicht automatisch eingetragen werden. Dieser Schritt muss noch implementiert werden!';
+    end if;
+
+    
+
+END$$
+DELIMITER ;
