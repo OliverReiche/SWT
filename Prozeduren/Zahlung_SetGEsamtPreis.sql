@@ -27,7 +27,7 @@ END$$
 DELIMITER ;
 
 -- Test
-call p_SetGesamtPreis(1); -- setzt GesamtPreis auf 5,2 € bei ZahlungsID 1
+call p_SetGesamtPreisERollerBuchung(1); -- setzt GesamtPreis auf 5,2 € bei ZahlungsID 1
                           -- Fahrtdauer 26min - Preis App = 20Cent/Minute 20*26 = 520 Cent / 100 = 5,2€
 
 
@@ -60,5 +60,5 @@ BEGIN
 END $$
 DELIMITER ;
 -- Test
-call p_SetAllGesamtPreis(); -- ok
+call p_SetAllGesamtPreisERollerBuchung(); -- ok
 
