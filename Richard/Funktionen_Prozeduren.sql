@@ -63,7 +63,28 @@ select fn_GetEinzelteilId('Fahradklingel');
 /********************************************************************************************************/
 
 -- /F20.1.2.3./ Einzelteil-Eintrag anlegen - p_NewEinzelteil
--- Diese Prozedur erwartet als Eingabe Artikeltyp, Artikelname sowie das Gewicht in Gramm des Einzelteils und fügt einen neuen Datensatz in die Tabelle EINZELTEIL ein, sofern das Einzelteil noch nicht existiert. Dies wird mit der Funktion fn_GetEinzelteilID überprüft.
+-- diese Prozedur erwartet als Übergabe Einzelteiltyp, Einzelteilname sowie das Gewicht in Gramm
+-- die Prozedur fügt einen neuen Datensatz in der Tabelle Einzelteile ein, sofern das jeweilige Einzelteil noch nicht im System registriert ist
+-- dies wird über die Funktion fn_GetEinzelteileID überprüft
+
+DELIMITER $$
+CREATE OR REPLACE procedure p_NewEinzelteil(inEinzelteilTyp varchar(50), inEinzeilteilBezeichnung varchar(100), inGewicht decimal(8,2))
+BEGIN
+    if (fn_GetEinzelteilID(inEinzeilteilBezeichnung)) = -1
+        then INSERT Into einzelteile (EType, EName, Gewicht)
+        VALUES (inEinzelteilTyp, inEinzeilteilBezeichnung, inGewicht);
+    else
+         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT ='Ein Einzelteil mit diesem Namen ist schon im System registriert!';
+    end if;
+END $$
+DELIMITER ;
+
+-- Testfälle
+-- 1. Fall erwartet einen Neuen Eintrag in der Einzelteile Tabelle (53, Reflektor, Hinterrad Reflektoren, 10.00)
+call p_NewEinzelteil('Reflektor', 'Hinterrad Reflektoren', 10.00);
+
+-- 2. Fall erwartet eine Fehlermeldung, da schon ein Rollerschaltwerk im System registriert ist
+call p_NewEinzelteil('Schaltwerk','Rollerschaltwerk', 100.00);
 
 /********************************************************************************************************/
 
@@ -116,7 +137,35 @@ select fn_GetLagerEinzelteileID('Hamburg', 'OLED-Display');
 /********************************************************************************************************/
 
 -- /F20.1.2.5./ Einzelteil im Lager registrieren - p_NewLagerEinzelteil
--- Diese Prozedur erwartet als Eingabe den Mindestbestand, Maximalbestand, einen Stadtnamen sowie eine Einzelteilbezeichnung. Innerhalb der Prozedur wird durch die Aufrufe der Funktionen fn_GetLagerId und fn_GetEinzelteilId werden die Werte für die LagerId sowie EinzelteilId ermittelt. Da diese Prozedur nur aufgerufen werden kann, sofern ein Artikel neu im Lager ist, wird der aktuelle Bestand automatisch auf den Wert 0 gesetzt, welcher später durch die Prozedur p_UpdateBestand aktualisiert wird. Nachdem die Prozedur die benötigten Werte ermittelt hat, fügt sie einen neuen Datensatz in die Tabelle LAGER_EINZELTEILE ein, sofern das Einzelteil noch nicht im Lager registriert ist. Dies wird mit der Funktion fn_GetLagerEinzelteileID überprüft.
+-- diese Prozedur erwartet als Übergabe den Mindestbestand, Maximalbestand, einen Stadtnamen sowie eine Einzelteilbezeichnung
+-- Innerhalb der Prozedur wird durch die Aufrufe der Funktionen fn_GetLagerId und fn_GetEinzelteilId werden die Werte für die LagerId sowie EinzelteilId ermittelt
+-- Da diese Prozedur nur aufgerufen werden kann, sofern ein Artikel neu im Lager ist, wird der aktuelle Bestand automatisch auf den Wert 0 gesetzt, welcher später durch die Prozedur p_UpdateBestand aktualisiert wird
+-- die Prozedur fügt einen neuen Datensatz in die Tabelle LAGER_EINZELTEILE ein, sofern das Einzelteil noch nicht im Lager registriert ist. Dies wird mit der Funktion fn_GetLagerEinzelteileID überprüft.
+
+DELIMITER $$
+CREATE OR REPLACE procedure p_NewLagerEinzelteil(inMindestBestand int, inMaximalBestand int, inStadt varchar(30), inEinzeilteilBezeichnung varchar(100))
+BEGIN
+    if (fn_GetLagerEinzelteileID(inStadt, inEinzeilteilBezeichnung)) = -1
+        then INSERT into lager_einzelteile (MinBestand, MaxBestand, Bestand, LagerID, EinzelteileId)
+        VALUES (inMindestBestand, inMaximalBestand, 0, fn_GetLagerID(inStadt), fn_GetEinzelteilID(inEinzeilteilBezeichnung));
+    else
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Das Einzelteil ist schon in diesem Lager registriert!';
+    end if;
+END $$
+DELIMITER ;
+
+-- Testfälle
+-- 1. Fall erwartet einen Neuen Eintrag in der Lager Einzelteile Tabelle(257, 200, 400, 0, 5, 52)
+call p_NewLagerEinzelteil(200,400,'Hamburg','OLED-Display');
+
+-- 2. Fall erwartet eine Fehlermeldung, da das OLED-Display in Erfurt schon registriert ist
+call p_NewLagerEinzelteil(200,400,'Erfurt','OLED-Display');
+
+-- 3. Fall erwartet eine Fehlermeldung, da im System kein Bremsverstrker registriert ist
+call p_NewLagerEinzelteil(200,400,'Erfurt','Bremsverstärker');
+
+-- 4. Fall erwartet eine Fehlermeldung, da es in London kein Lager gibt
+call p_NewLagerEinzelteil(200,400,'London','OLED-Display');
 
 /********************************************************************************************************/
 
@@ -147,8 +196,29 @@ select fn_GetLieferantID('DHL');
 
 /********************************************************************************************************/
 
--- /F20.1.2.7./ Lieferanten-Eintrag anlegen - p_NewLieferant 
--- Diese Prozedur erwartet als Übergabe einen Lieferantennamen. Innerhalb der Prozedur wird das letzte Lieferungsdatum auf den Standardwert 2015-01-01 gesetzt und wird später durch die Prozedur p_UpdateLieferantLetzteLieferung automatisch aktualisiert. Die Prozedur fügt einen neuen Datensatz in die Tabelle LIEFERANT ein, sofern der Lieferant noch nicht im System registriert ist. Dies wird mit der Funktion fn_GetLieferantId überprüft.
+-- /F20.1.2.7./ Lieferanten-Eintrag anlegen - p_NewLieferant
+-- diese Prozedur erwartet als Übergabe einen Lieferantennamen
+-- die Prozedur fügt einen neuen Datensatz in der Tabelle Lieferant ein, sofern der Lieferant noch nicht existiert, dies wird mit der Funktion fn_GetLieferantID überprüft
+-- da diese Funktion nur aufgerufen werden kann wenn ein Lieferant neu registriert wird, wird das LetzteLieferungsdatum automatisch auf den Wert 2015-01-01 gesetzt und später überschrieben
+
+DELIMITER $$
+CREATE OR REPLACE procedure p_NewLieferant(inLieferantName varchar(50))
+BEGIN
+    if (fn_GetLieferantID(inLieferantName)) = -1
+        then INSERT Into Lieferant (LieferantName, LetzteLieferung)
+        VALUES (inLieferantName, '2015-01-01');
+    else
+         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT ='Lieferant existiert schon im System!';
+    end if;
+END $$
+DELIMITER ;
+
+-- Testfälle
+-- 1. Fall erwartet einen Neuen Eintrag in der Lieferanten Tabelle (77, Amazon, 2015-01-01)
+call p_NewLieferant('Amazon');
+
+-- 2. Fall erwartet eine Fehlermeldung, da der Lieferant Elite Logistics schon registriert ist
+call p_NewLieferant('Elite Logistics');
 
 /********************************************************************************************************/
 
@@ -220,8 +290,22 @@ select fn_GetLagerLieferantID('Hamburg', 'Hermes');
 
 /********************************************************************************************************/
 
--- /F20.1.2.13/ Gesamtpreis ermitteln - fn_GetGeamtPreisLieferung
--- Diese Funktion erwartet als Übergabe eine Anzahl, sowie einen Stückpreis und liefert den berechneten Gesamtpreis (Anzahl * Stückpreis) zurück.
+-- /F20.1.2.13/ Gesamtpreis ermitteln - fn_GetGesamtPreisLieferung
+-- diese FUnktion ermittelt das Produkt aus der Eingabe (Anzahl, Stückpreis) und liefert dieses zurück
+
+DELIMITER $$
+CREATE OR REPLACE function fn_GetGesamtPreisLieferung(inAnzahl int, inStueckpreis decimal(8,2))
+returns decimal(8,2)
+BEGIN 
+    declare vOutGesamtPreis decimal(8,2);
+    set vOutGesamtPreis = (inAnzahl * inStueckpreis);
+    return vOutGesamtPreis;
+END $$
+DELIMITER ;
+
+-- Testfälle
+-- 1. Fall erwartet 100.00
+select fn_GetGesamtPreisLieferung(20,5.00);
 
 /********************************************************************************************************/
 
@@ -231,17 +315,74 @@ select fn_GetLagerLieferantID('Hamburg', 'Hermes');
 /********************************************************************************************************/
 
 -- /F20.1.2.14./ Mindestbestand ermitteln - fn_GetMindestbestand 
--- Diese Funktion erwartet als Eingabe einen Stadtnamen sowie eine Einzelteilbezeichnung. Innerhalb der Funktion wird durch die Aufrufe der Funktionen fn_GetLagerId sowie fn_GetEinzelteilId, die LagerId und die EinzelzeilId ermitteln. Durch übergabe der Id´s an die Funktion fn_GetLagerEinzelteilId wird die Lager_EinzelteilId ermitteln. Die Funktion gibt den jeweiligen Mindestbestand zurück.
+-- diese Funktion sucht mittels Eingabe (Lager_ETeileID) den jeweiligen Mindestbestand und gibt diesen zurück
+-- dass das Einzelteil im Lager registriert ist, wird über die Funktion fn_GetLagerEinzelteileID überprüft
+
+DELIMITER $$
+CREATE OR REPLACE function fn_GetMindestBestand(inLagerETeileID int)
+returns int
+BEGIN
+    declare vOutMindestBestand int;
+
+    select MinBestand into vOutMindestBestand
+    from lager_einzelteile
+    where Lager_ETeileID = inLagerETeileID;
+
+    return vOutMindestBestand;
+END $$
+DELIMITER ;
+
+-- Testfälle
+-- 1. Fall erwartet 220 als Rückgabe
+select fn_GetMindestBestand(1);
 
 /********************************************************************************************************/
 
 -- /F20.1.2.15./ Aktuellen Bestand ermitteln - fn_GetBestand 
--- Diese Funktion erwartet als Eingabe einen Stadtnamen sowie eine Einzelteilbezeichnung. Innerhalb der Funktion wird durch die Aufrufe der Funktionen fn_GetLagerId sowie fn_GetEinzelteilId, die LagerId und die EinzelzeilId ermitteln. Durch übergabe der Id´s an die Funktion fn_GetLagerEinzelteilId wird die Lager_EinzelteilId ermitteln. Die Funktion gibt den jeweiligen aktuellen Bestand zurück.
+-- diese Funktion sucht mittels Eingabe (Lager_ETeileID) den jeweiligen Bestand und gibt diesen zurück
+-- dass das Einzelteil im Lager registriert ist, wird über die Funktion fn_GetLagerEinzelteileID überprüft
+
+DELIMITER $$
+CREATE OR REPLACE function fn_GetBestand(inLagerETeileID int)
+returns int
+BEGIN
+    declare vOutBestand int;
+    
+    select Bestand into vOutBestand
+    from lager_einzelteile
+    where Lager_ETeileID = inLagerETeileID;
+
+    return vOutBestand;
+END $$
+DELIMITER ;
+
+-- Testfälle
+-- 1. Fall erwartet 354 als Rückgabe
+select fn_GetBestand(1);
 
 /********************************************************************************************************/
 
 -- /F20.1.2.16./ Maximalbestand ermitteln - fn_GetMaxBestand 
--- Diese Funktion erwartet als Eingabe einen Stadtnamen sowie eine Einzelteilbezeichnung. Innerhalb der Funktion wird durch die Aufrufe der Funktionen fn_GetLagerId sowie fn_GetEinzelteilId, die LagerId und die EinzelzeilId ermitteln. Durch übergabe der Id´s an die Funktion fn_GetLagerEinzelteilId wird die Lager_EinzelteilId ermitteln. Die Funktion gibt den jeweiligen Maximalbestand zurück.
+-- diese Funktion sucht mittels Eingabe (Lager_ETeileID) den jeweiligen Maximalbestand und gibt diesen zurück
+-- dass das Einzelteil im Lager registriert ist, wird über die Funktion fn_GetLagerEinzelteileID überprüft
+
+DELIMITER $$
+CREATE OR REPLACE function fn_GetMaxBestand(inLagerETeileID int)
+returns int
+BEGIN
+    declare vOutMaxBestand int;
+    
+    select MaxBestand into vOutMaxBestand
+    from lager_einzelteile
+    where Lager_ETeileID = inLagerETeileID;
+
+    return vOutMaxBestand;
+END $$
+DELIMITER ;
+
+-- Testfälle
+-- 1. Fall erwartet 520 als Rückgabe
+select fn_GetMaxBestand(1);
 
 /********************************************************************************************************/
 
