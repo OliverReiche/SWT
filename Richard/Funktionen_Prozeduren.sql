@@ -281,7 +281,7 @@ CREATE OR REPLACE procedure p_NewLagerLieferant(inLieferantName varchar(50), inS
 BEGIN
     if (fn_GetLagerLieferantID(inStadt, inLieferantName)) = -1
         then INSERT into lager_lieferant (Lager_LieferID, LieferantID, LagerID)
-        VALUES (testid, fn_GetLieferantID(inLieferantName), fn_GetLagerID(inStadt));
+        VALUES (fn_GetLieferantID(inLieferantName), fn_GetLagerID(inStadt));
     else
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Der Lieferant ist schon in diesem Lager registriert!';
     end if;
@@ -617,14 +617,70 @@ select fn_KontrolliereBestand('Erfurt', 'Aluminiumlenker', 900);
 -- /F20.1.2./ Wareneingang neu anlegen - Prozedur p_CreateNewWareneingang
 -- diese Funktion erwartet als Übergabe einen Stadtnamen, Lieferantennamen, eine Einzelteilbezeichnung, eine Anzahl, einen Stückpreis, einen Mindestbestand, Maximalbestand, ein Gewicht 
 DELIMITER $$
-CREATE OR REPLACE procedure p_CreateNewWareneingang(inStadt varchar(30), inEinzeilteilBezeichnung varchar(50), inAnzahl int, inStueckpreis decimal (8,2), inMindestBestand int, inMaximalBestand int, inGewicht decimal (5,2))
+CREATE OR REPLACE procedure p_CreateNewWareneingang(inStadt varchar(30),inLieferantName varchar(50), inEinzeilteilBezeichnung varchar(100), inLieferDatum date, inEinzelteiltyp varchar(50),  inAnzahl int, inStueckpreis decimal (8,2), inMindestBestand int, inMaximalBestand int, inGewicht decimal (5,2))
 BEGIN
+    declare vLagerID int;
+    declare vLieferantId int;
+    declare vEinzelteilID int;
+    
+    set vLagerID = fn_GetLagerID(inStadt);
+    set vLieferantId = fn_GetLieferantID(inLieferantName);
+    set vEinzelteilID = fn_GetEinzelteilID(inEinzeilteilBezeichnung);
 
     if (fn_IstRollerLieferung(inEinzeilteilBezeichnung)) = 0
         then SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Roller Lieferungen können derzeit noch nicht automatisch eingetragen werden. Dieser Schritt muss noch implementiert werden!';
     end if;
 
-    
+    if fn_GetLagerID(inStadt) = -1
+        then SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'In dieser Stadt gibt es kein Lager, bitte Eingabe überprüfen!';
+    end if;
 
+    if vLieferantId = -1
+        then
+            call p_NewLieferant(inLieferantName);
+            call p_NewLagerLieferant(inLieferantName, inStadt);
+    elseif (fn_GetLagerLieferantID(inStadt, inLieferantName)) = -1
+        then
+            call p_NewLagerLieferant(inLieferantName, inStadt);
+    end if;
+
+    if vEinzelteilID = -1
+        then
+            call p_NewEinzelteil(inEinzelteilTyp, inEinzeilteilBezeichnung, inGewicht);
+            call p_NewLagerEinzelteil(inMindestBestand, inMaximalBestand, inStadt, inEinzeilteilBezeichnung);
+    elseif (fn_GetLagerEinzelteileID(inStadt, inEinzeilteilBezeichnung)) = -1
+        then
+            call p_NewLagerEinzelteil(inMindestBestand, inMaximalBestand, inStadt, inEinzeilteilBezeichnung);
+    end if;
+
+    call p_NewLieferDetails(inAnzahl, inStueckpreis, inStadt, inLieferantName, inEinzeilteilBezeichnung);
+    call p_NewLieferung(inLieferDatum, inAnzahl, inStueckpreis);
+    call p_UpdateLagerbestand(inStadt, inEinzeilteilBezeichnung, inAnzahl);
+    call p_UpdateLieferantLetzteLieferung(inLieferantName, inLieferDatum);
 END$$
 DELIMITER ;
+
+
+-- Testfälle
+-- Situation 1: Das Lager in Erfurt hat von den Kunden immer wieder Feedback bekommen, dass die Trittfläche der Roller zu klein ist
+-- daraufhin wurde nach Gesprächen innerhalb der Firmenleitung entschieden, neue Trittflächen zu bestellen, diese wurden jedoch von keinem aktuellen Lieferanten angeboten
+-- der VP-Investement schaute sich demnach nach weiteren externen Lieferanten um und hat eine neue Bestellung angefordert
+-- die Bestellung traf am 04.07.2023 im Lager ein und der Logistiker bekam eine Liste mit Werten, welche er in das System einpflegen soll, wofür er das neue Eingabeformular verwenden möchte
+-- Lieferant: Super Transports
+-- Stadt: Erfurt
+-- Lieferdatum: 2023-07-04
+-- Einzelteiltyp: Tritt, Bezeichnung: XL-Trittfläche, Mindestbestand: 100, Maximalbestand: 300, Gewicht: 5000g
+-- Lieferumpfang: 200 Teile, Stückpreis: 10.00 Euro
+-- Der Logistiker ruft das neue Formular mit folgenden Werten auf
+
+call p_CreateNewWareneingang('Erfurt', 'Super Transports', 'XL-Trittflaeche', '2023-07-04', 'Tritt', 200, 10.00, 100, 300, 5000);
+
+-- er erwartet nach Abschicken des Formulars, dass in der Datenbank neuen Einträge entstanden sind:
+-- Neuer Lieferant: (78, Super Transports, 2023-07-04)
+-- Neues Einzelteil: (54, Tritt, XL-Trittflaeche, 5000)
+-- Neuer Eintrag in Lager_Lieferant: (378, 78, 1)
+-- Neuer Eintrag in Lager_Einzelteile: (258, 100, 300, 200, 1, 54)
+-- Neuer Lieferdetails Eintrag: (403, 200, 10.00, 378, 54)
+-- Neuer Lieferung Eintrag: (403, 2023-07-04, 2000.00, 403)
+
+select fn_GetLieferantID('Super Transports');
