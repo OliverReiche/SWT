@@ -638,10 +638,14 @@ call p_NewLieferung('2023-07-03', 10, 50.00);
 
 /********************************************************************************************************/
 
--- /F10.1.2./ Wareneingang neu anlegen - Prozedur p_CreateNewWareneingang
--- diese Funktion erwartet als Übergabe einen Stadtnamen, Lieferantennamen, eine Einzelteilbezeichnung, eine Anzahl, einen Stückpreis, einen Mindestbestand, Maximalbestand, ein Gewicht 
+-- /F10.1.2.22./ Neue Einzelteil-Lieferung anlegen - p_CreateNewEinzelteilLieferung 
+-- iese Prozedur wird durch die Mantel-Prozedur p_CreateNewWareneingang aufgerufen
+-- Als Übergabe erwartet Sie daher Stadtname, Lieferantennamen, Einzelteilbezeichnung, Lieferdatum, Einzelteil Typ, Lieferzahl, Stückpreis, Mindestbestand, Maximalbestand sowie das Gewicht
+-- Die Prozedur ruft eine Reihe weiterer Funktionen und Prozeduren auf, die Funktionalitäten der jeweiligen Funktionen und Prozeduren sind oberhalb beschrieben 
+
+
 DELIMITER $$
-CREATE OR REPLACE procedure p_CreateNewWareneingang(inStadt varchar(30),inLieferantName varchar(50), inEinzeilteilBezeichnung varchar(100), inLieferDatum date, inEinzelteiltyp varchar(50),  inAnzahl int, inStueckpreis decimal (8,2), inMindestBestand int, inMaximalBestand int, inGewicht decimal (8,2))
+CREATE OR REPLACE procedure p_CreateNewEinzelteilLieferung(inStadt varchar(30),inLieferantName varchar(50), inEinzeilteilBezeichnung varchar(100), inLieferDatum date, inEinzelteiltyp varchar(50),  inAnzahl int, inStueckpreis decimal (8,2), inMindestBestand int, inMaximalBestand int, inGewicht decimal (8,2))
 BEGIN
     declare vLagerID int;
     declare vLieferantId int;
@@ -651,9 +655,6 @@ BEGIN
     set vLieferantId = fn_GetLieferantID(inLieferantName);
     set vEinzelteilID = fn_GetEinzelteilID(inEinzeilteilBezeichnung);
 
-    if (fn_IstRollerLieferung(inEinzeilteilBezeichnung)) = 0
-        then SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Roller Lieferungen können derzeit noch nicht automatisch eingetragen werden. Dieser Schritt muss noch implementiert werden!';
-    end if;
 
     if fn_GetLagerID(inStadt) = -1
         then SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'In dieser Stadt gibt es kein Lager, bitte Eingabe überprüfen!';
@@ -683,6 +684,23 @@ BEGIN
         call p_UpdateLagerbestand(inStadt, inEinzeilteilBezeichnung, inAnzahl);
         call p_NewLieferDetails(inAnzahl, inStueckpreis, inStadt, inLieferantName, inEinzeilteilBezeichnung);
         call p_NewLieferung(inLieferDatum, inAnzahl, inStueckpreis);
+    end if;
+END$$
+DELIMITER ;
+
+/********************************************************************************************************/
+
+-- /F10.1.2./ Wareneingang neu anlegen - Prozedur p_CreateNewWareneingang
+-- diese Funktion erwartet als Übergabe einen Stadtnamen, Lieferantennamen, eine Einzelteilbezeichnung, eine Anzahl, einen Stückpreis, einen Mindestbestand, Maximalbestand, ein Gewicht 
+DELIMITER $$
+CREATE OR REPLACE procedure p_CreateNewWareneingang(inStadt varchar(30),inLieferantName varchar(50), inEinzeilteilBezeichnung varchar(100), inLieferDatum date, inEinzelteiltyp varchar(50),  inAnzahl int, inStueckpreis decimal (8,2), inMindestBestand int, inMaximalBestand int, inGewicht decimal (8,2))
+BEGIN
+    if (fn_IstRollerLieferung(inEinzeilteilBezeichnung)) = 0
+        then SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Roller Lieferungen können derzeit noch nicht automatisch eingetragen werden. Dieser Schritt muss noch implementiert werden!';
+    elseif fn_IstRollerLieferung(inEinzeilteilBezeichnung) = 1
+        then call p_CreateNewEinzelteilLieferung(inStadt, inLieferantName, inEinzeilteilBezeichnung, inLieferantName, inEinzelteilTyp, inAnzahl, inStueckpreis, inMindestBestand, inMaximalBestand, inGewicht);
+    else
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Wareneingang konnte nicht kategorisiert werden, bitte Eingabe überprüfen!';
     end if;
 END$$
 DELIMITER ;
