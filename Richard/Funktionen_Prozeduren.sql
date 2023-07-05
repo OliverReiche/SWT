@@ -47,13 +47,20 @@ CREATE OR REPLACE function fn_IstRollerLieferung(inEinzeilteilBezeichnung varcha
 returns int
 BEGIN
     declare vOut int;
-    set vOut = 1;
+    set vOut = 0;
     if inEinzeilteilBezeichnung = 'Roller'
-        then set vOut = 0;
+        then set vOut = 1;
     end if;
     return vOut;
 END $$
 DELIMITER ;
+
+-- Testfälle
+-- 1.Fall erwartet 1 als Rückgabe
+select fn_IstRollerLieferung('Roller');
+
+-- 2. Fall erwartet 0 als Rückgabe
+select fn_IstRollerLieferung('Motor');
 
 /********************************************************************************************************/
 
@@ -695,10 +702,10 @@ DELIMITER ;
 DELIMITER $$
 CREATE OR REPLACE procedure p_CreateNewWareneingang(inStadt varchar(30),inLieferantName varchar(50), inEinzeilteilBezeichnung varchar(100), inLieferDatum date, inEinzelteiltyp varchar(50),  inAnzahl int, inStueckpreis decimal (8,2), inMindestBestand int, inMaximalBestand int, inGewicht decimal (8,2))
 BEGIN
-    if (fn_IstRollerLieferung(inEinzeilteilBezeichnung)) = 0
+    if (fn_IstRollerLieferung(inEinzeilteilBezeichnung)) = 1
         then SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Roller Lieferungen können derzeit noch nicht automatisch eingetragen werden. Dieser Schritt muss noch implementiert werden!';
-    elseif fn_IstRollerLieferung(inEinzeilteilBezeichnung) = 1
-        then call p_CreateNewEinzelteilLieferung(inStadt, inLieferantName, inEinzeilteilBezeichnung, inLieferantName, inEinzelteilTyp, inAnzahl, inStueckpreis, inMindestBestand, inMaximalBestand, inGewicht);
+    elseif fn_IstRollerLieferung(inEinzeilteilBezeichnung) = 0
+        then call p_CreateNewEinzelteilLieferung(inStadt, inLieferantName, inEinzeilteilBezeichnung, inLieferDatum, inEinzelteilTyp, inAnzahl, inStueckpreis, inMindestBestand, inMaximalBestand, inGewicht);
     else
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Wareneingang konnte nicht kategorisiert werden, bitte Eingabe überprüfen!';
     end if;
@@ -734,19 +741,19 @@ call p_CreateNewWareneingang('Erfurt', 'Super Transports', 'XL-Trittflaeche', '2
 /********************************************************************************************************/
 
 -- Situation 2: Nachdem die neue XL-Trittfläche so gut in Erfurt angekommen ist, will auch Hamburg das Einzelteil in Ihr Lager aufnehmen, jedoch wird es mittlerweile von Elite Distribution geliefert
--- die Bestellung trifft in Hamburg am 06.07.2023 ein und der Logistiker bekommt eine Liste mit Werten, welche er in das System einpflegen soll, wofür er das neue Eingabeformular verwenden möchte
+-- die Bestellung trifft in Hamburg am 05.07.2023 ein und der Logistiker bekommt eine Liste mit Werten, welche er in das System einpflegen soll, wofür er das neue Eingabeformular verwenden möchte
 -- Lieferant: Elite Distribution
 -- Stadt: Hamburg
--- Lieferdatum: 2023-07-06
+-- Lieferdatum: 2023-07-05
 -- Einzelteiltyp: Tritt, Bezeichnung: XL-Trittfläche, Mindestbestand: 200, Maximalbestand: 500, Gewicht: 5000g
 -- Lieferumfang: 400 Teile, Stückpreis: 8.00 Euro
 -- Der Logistiker ruft das neue Formular mit folgenden Werten auf
 
-call p_CreateNewWareneingang('Hamburg', 'Elite Distribution', 'XL-Trittflaeche', '2023-07-06', 'Tritt', 400, 8.00, 200, 500, 5000.00);
+call p_CreateNewWareneingang('Hamburg', 'Elite Distribution', 'XL-Trittflaeche', '2023-07-05', 'Tritt', 400, 8.00, 200, 500, 5000.00);
 
 -- er erwartet nach Abschicken des Formulars, dass in der Datenbank neuen Einträge entstanden sind:
 -- Neuer Eintrag in Lager_Einzelteile: (259, 200, 500, 400, 5, 54)
--- Aktualisierung LetzeLieferdatum Elite Distribution auf 2023-07-06
+-- Aktualisierung LetzeLieferdatum Elite Distribution auf 2023-07-05
 -- Neuer Lieferdetails Eintrag: (404, 400, 8.00, 5, 54)
 -- Neuer Lieferung Eintrag: (404, 2023-07-06, 3200.00, 404)
 
@@ -770,16 +777,19 @@ call p_CreateNewWareneingang('Berlin', 'Local Imports', 'Elektromotor', '2023-07
 
 /********************************************************************************************************/
 
--- Situation 4, Hamburg bekommt eine weitere Lieferung, welche nicht in den Lager passt
+-- Situation 4, Ein Logistiker in Hamburg versucht eine Roller Lieferung über das Formular aufzunehmen
+call p_CreateNewWareneingang('Hamburg', 'Elite Distribution', 'Roller', '2023-07-04', 'Roller', 200, 8.00, 200, 500, 5000.00);
+
+-- Situation 5, Hamburg bekommt eine weitere Lieferung, welche nicht in das Lager passt
 call p_CreateNewWareneingang('Hamburg', 'Elite Distribution', 'XL-Trittflaeche', '2023-07-04', 'Tritt', 200, 8.00, 200, 500, 5000.00);
 
--- Situation 5, Logistiker verschreibt sich bei der Eingabe der Stadt => System bricht ab da es in der Stadt kein Lager gibt
+-- Situation 6, Logistiker verschreibt sich bei der Eingabe der Stadt => System bricht ab da es in der Stadt kein Lager gibt
 call p_CreateNewWareneingang('Haburg', 'Elite Distribution', 'XL-Trittflaeche', '2023-07-04', 'Tritt', 200, 8.00, 200, 500, 5000.00);
 
--- Situation 6, Logistiker gibt ein Lieferdatum ein, welches in der Zukunft liegt
+-- Situation 7, Logistiker gibt ein Lieferdatum ein, welches in der Zukunft liegt
 call p_CreateNewWareneingang('Hamburg', 'Elite Distribution', 'XL-Trittflaeche', '2024-07-04', 'Tritt', 50, 8.00, 200, 500, 5000.00);
 
--- Situation 7, Logistiker gibt ein Lieferdatum ein, welches weiter in der Vergangneheit liegt, als das letzte Lieferungsdatum des Lieferanten
+-- Situation 8, Logistiker gibt ein Lieferdatum ein, welches weiter in der Vergangneheit liegt, als das letzte Lieferungsdatum des Lieferanten
 call p_CreateNewWareneingang('Hamburg', 'Elite Distribution', 'XL-Trittflaeche', '2023-06-04', 'Tritt', 50, 8.00, 200, 500, 5000.00);
 
 
