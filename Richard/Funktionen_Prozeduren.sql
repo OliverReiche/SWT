@@ -11,7 +11,7 @@
 -- Gleiches gilt für den Import! Da es zu Verschachtelungen innerhalb der Funktionen kommt, ist die Reihenfolge des Imports wichtig einzuhalten
 /********************************************************************************************************/
 
--- /F20.1.2.1./ Lager suchen - fn_GetLagerId
+-- /F10.1.2.1./ Lager suchen - fn_GetLagerId
 -- Diese Funktion sucht mittels der Eingabe (Stadtnamen) die jeweilige LagerId aus der Tabelle Lager
 -- wenn die Funktion kein Lager in der Stadt finden kann, wird -1 zurückgegeben
 
@@ -38,7 +38,7 @@ select fn_GetLagerID('London');
 
 /********************************************************************************************************/
 
--- /F20.1.2.2./ Prüfen ob Roller-Lieferung - fn_IstRollerLieferung
+-- /F10.1.2.2./ Prüfen ob Roller-Lieferung - fn_IstRollerLieferung
 -- Diese Funktion erwartet als Übergabe eine Einzelteilbezeichnung und dient der Kategorisierung des Wareneinganges
 -- Sie liefert, wenn es sich beim Wareneingang um einen Roller hanedlt den Wert 1(Wahreheitswert true), sonst 0 (Wahrheitswert false) zurück.
 
@@ -57,7 +57,7 @@ DELIMITER ;
 
 /********************************************************************************************************/
 
--- /F20.1.2.3./ Einzelteil suchen - fn_GetEinzelteilId
+-- /F10.1.2.3./ Einzelteil suchen - fn_GetEinzelteilId
 -- Diese Funktion sucht mittels der Eingabe (Einzelteilbezeichnung) die jeweilige EinzelteilId aus der Tabelle Einzelteile 
 -- wenn die Funktion kein Einzelteil mit dieser BEschreibung finden kann, wird -1 zurückgegeben
 
@@ -84,7 +84,7 @@ select fn_GetEinzelteilId('Fahradklingel');
 
 /********************************************************************************************************/
 
--- /F20.1.2.4./ Einzelteil-Eintrag anlegen - p_NewEinzelteil
+-- /F10.1.2.4./ Einzelteil-Eintrag anlegen - p_NewEinzelteil
 -- diese Prozedur erwartet als Übergabe Einzelteiltyp, Einzelteilname sowie das Gewicht in Gramm
 -- die Prozedur fügt einen neuen Datensatz in der Tabelle Einzelteile ein, sofern das jeweilige Einzelteil noch nicht im System registriert ist
 -- dies wird über die Funktion fn_GetEinzelteileID überprüft
@@ -110,7 +110,7 @@ call p_NewEinzelteil('Schaltwerk','Rollerschaltwerk', 100.00);
 
 /********************************************************************************************************/
 
--- /F20.1.2.5./ Einzelteil im Lager suchen - fn_GetLagerEinzelteileID
+-- /F10.1.2.5./ Einzelteil im Lager suchen - fn_GetLagerEinzelteileID
 -- Diese Funktion sucht mittels der Eingabe (Stadtname, Einzelteilbezeichnung) die jeweilige Lager_EteileId aus der Tabelle lager_einzelteile
 -- innerhalb der Funktion werden durch den Aufruf der Funktionen fn_GetLagerId sowie fn_GetEinzelteilId die Werte für LagerId und EinzelteilId ermittelt
 -- wenn die Funktion kein Einzelteil mit dieser Beschreibung in dem jeweiligen Lager finden, wird -1 zurückgegeben
@@ -158,7 +158,7 @@ select fn_GetLagerEinzelteileID('Hamburg', 'OLED-Display');
 
 /********************************************************************************************************/
 
--- /F20.1.2.6./ Einzelteil im Lager registrieren - p_NewLagerEinzelteil
+-- /F10.1.2.6./ Einzelteil im Lager registrieren - p_NewLagerEinzelteil
 -- diese Prozedur erwartet als Übergabe den Mindestbestand, Maximalbestand, einen Stadtnamen sowie eine Einzelteilbezeichnung
 -- Innerhalb der Prozedur wird durch die Aufrufe der Funktionen fn_GetLagerId und fn_GetEinzelteilId werden die Werte für die LagerId sowie EinzelteilId ermittelt
 -- Da diese Prozedur nur aufgerufen werden kann, sofern ein Artikel neu im Lager ist, wird der aktuelle Bestand automatisch auf den Wert 0 gesetzt, welcher später durch die Prozedur p_UpdateBestand aktualisiert wird
@@ -191,7 +191,7 @@ call p_NewLagerEinzelteil(200,400,'London','OLED-Display');
 
 /********************************************************************************************************/
 
--- /F20.1.2.7./ Lieferanten ermitteln - fn_GetLieferantID
+-- /F10.1.2.7./ Lieferanten ermitteln - fn_GetLieferantID
 -- Diese Funktion sucht mittels der Eingabe (Lieferantennamen) die jeweilige LieferantID aus der Tabelle lieferant
 -- wenn die Funktion keinen Lieferanten mit diesem Namen finden kann, wird -1 zurückgegeben
 
@@ -218,7 +218,7 @@ select fn_GetLieferantID('DHL');
 
 /********************************************************************************************************/
 
--- /F20.1.2.8./ Lieferanten-Eintrag anlegen - p_NewLieferant
+-- /F10.1.2.8./ Lieferanten-Eintrag anlegen - p_NewLieferant
 -- diese Prozedur erwartet als Übergabe einen Lieferantennamen
 -- die Prozedur fügt einen neuen Datensatz in der Tabelle Lieferant ein, sofern der Lieferant noch nicht existiert, dies wird mit der Funktion fn_GetLieferantID überprüft
 -- da diese Funktion nur aufgerufen werden kann wenn ein Lieferant neu registriert wird, wird das LetzteLieferungsdatum automatisch auf den Wert 2015-01-01 gesetzt und später überschrieben
@@ -244,7 +244,7 @@ call p_NewLieferant('Elite Logistics');
 
 /********************************************************************************************************/
 
--- /F20.1.2.9./ Lieferant für Lager ermitteln - fn_GetLagerLieferantID
+-- /F10.1.2.9./ Lieferant für Lager ermitteln - fn_GetLagerLieferantID
 -- Diese Funktion sucht mittels der Eingabe (Stadtname, Lieferantename) die jeweilige Lager_LieferID aus der Tabelle lager_lieferant 
 -- innerhalb der Funktion werden durch den Aufruf der Funktionen fn_GetLagerId sowie fn_GetLieferantID die Werte für LagerId und LieferantID ermittelt
 -- wenn die Funktion kein Lieferanten mit diesem Namen in dem jeweiligen Lager finden, wird -1 zurückgegeben 
@@ -292,7 +292,7 @@ select fn_GetLagerLieferantID('Hamburg', 'Hermes');
 
 /********************************************************************************************************/
 
--- /F20.1.2.10./ Lieferanten im Lager registrieren - p_NewLagerLieferant 
+-- /F10.1.2.10./ Lieferanten im Lager registrieren - p_NewLagerLieferant 
 
 -- diese Prozedur erwartet als Übergabe einen Lieferantennamen sowie einen Stadtnamen
 -- Innerhalb der Funktion werden durch die Aufrufe der Funktionen fn_GetLagerId und fn_GetLieferantId die LagerId und LieferantenId ermittelt.
@@ -325,7 +325,7 @@ call p_NewLagerLieferant('Hermes','London');
 
 /********************************************************************************************************/
 
--- /F20.1.2.11/ Gesamtpreis ermitteln - fn_GetGesamtPreisLieferung
+-- /F10.1.2.11/ Gesamtpreis ermitteln - fn_GetGesamtPreisLieferung
 -- diese Helper-Funktion ermittelt das Produkt aus der Eingabe (Anzahl, Stückpreis) und liefert dieses zurück
 
 DELIMITER $$
@@ -344,7 +344,7 @@ select fn_GetGesamtPreisLieferung(20,5.00);
 
 /********************************************************************************************************/
 
--- /F20.1.2.12./ Mindestbestand ermitteln - fn_GetMindestbestand 
+-- /F10.1.2.12./ Mindestbestand ermitteln - fn_GetMindestbestand 
 -- diese Funktion sucht mittels Eingabe (Stadtnamen, Einzelteilbezeichnung) den jeweiligen Mindestbestand und gibt diesen zurück
 -- dass das Einzelteil im Lager registriert ist, wird über die Funktion fn_GetLagerEinzelteileID überprüft
 
@@ -368,7 +368,7 @@ select fn_GetMindestBestand('Erfurt', 'Lithium-Ionen');
 
 /********************************************************************************************************/
 
--- /F20.1.2.13./ Aktuellen Bestand ermitteln - fn_GetBestand 
+-- /F10.1.2.13./ Aktuellen Bestand ermitteln - fn_GetBestand 
 -- diese Funktion sucht mittels Eingabe (Stadtnamen, Einzelteilbezeichnung) den jeweiligen Mindestbestand und gibt diesen zurück
 -- dass das Einzelteil im Lager registriert ist, wird über die Funktion fn_GetLagerEinzelteileID überprüft
 
@@ -392,7 +392,7 @@ select fn_GetBestand('Erfurt', 'Lithium-Ionen');
 
 /********************************************************************************************************/
 
--- /F20.1.2.14./ Maximalbestand ermitteln - fn_GetMaxBestand 
+-- /F10.1.2.14./ Maximalbestand ermitteln - fn_GetMaxBestand 
 -- diese Funktion sucht mittels Eingabe (Stadtnamen, Einzelteilbezeichnung) den jeweiligen Mindestbestand und gibt diesen zurück
 -- dass das Einzelteil im Lager registriert ist, wird über die Funktion fn_GetLagerEinzelteileID überprüft
 
@@ -416,7 +416,7 @@ select fn_GetMaxBestand('Erfurt', 'Lithium-Ionen');
 
 /********************************************************************************************************/
 
--- /F20.1.2.15./ Neuen Restbestand ermitteln - fn_BerechneNeuenBestand
+-- /F10.1.2.15./ Neuen Restbestand ermitteln - fn_BerechneNeuenBestand
 -- diese Funktion sucht berechnet mittels der Eingabe (Stadtname, Einzelteilbezeichnung, Anzahl) den neuen Lagerbestand
 -- innerhalb der Funktion wird über die FUnktion fn_GetBestand der aktuelle BEstand ermittelt
 
@@ -434,7 +434,7 @@ select fn_BerechneNeuenBestand('Erfurt', 'Metallkettenschutz', 34)
 
 /********************************************************************************************************/
 
--- /F20.1.2.16./ Neuen Restbestand überprüfen - fn_KontrolliereBestand
+-- /F10.1.2.16./ Neuen Restbestand überprüfen - fn_KontrolliereBestand
 -- Diese Funktion erwartet als Eingabe einen Stadtnamen, eine Einzelteilbezeichnung sowie einen neuen Restbestand
 -- Innerhalb der Funktion wird durch den Aufruf der Funktionen fn_GetMaxBestand der Maximalbestand des Einzelteils in dem jeweiligen Lager ermitteln
 -- die Funktion prüft, ob der neue Bestand den Maximalbestand überschreitet, falls dies zutrifft, gibt sie einen Fehler aus, sonst wird 1 zurückgegeben
@@ -463,7 +463,7 @@ select fn_KontrolliereBestand('Erfurt', 'Aluminiumlenker', 900);
 
 /********************************************************************************************************/
 
--- /F20.1.2.17./ Lieferdatum überprüfen - fn_KontrolliereDatum
+-- /F10.1.2.17./ Lieferdatum überprüfen - fn_KontrolliereDatum
 -- Diese Funktion erwartet als Eingabe ein Datum (Lieferdatum)
 -- innerhalb der Funktion wird das Datum auf Gültigkeit geprüft
 -- wenn das Datum valide ist, gibt die Funktion 1 zurück, sonst führt sie zum abbruch
@@ -498,7 +498,7 @@ select fn_KontrolliereDatum('2024-01-01');
 
 /********************************************************************************************************/
 
--- /F20.1.2.18./ Letzte Lieferung aktualisieren - p_UpdateLieferantLetzteLieferung
+-- /F10.1.2.18./ Letzte Lieferung aktualisieren - p_UpdateLieferantLetzteLieferung
 -- Diese Funktion erwartet als Übergabe einen Lieferantennamen sowie ein Datum (Format: yyyy-mm-dd)
 -- durch den Aufurf der Funktion fn_KontrolliereDatum wird das eingegeben Datum auf Gültigkeit überprüft
 -- Innerhalb der Prozedur wird über den Aufruf der Funktion fn_GetLieferantId die LieferantenId ermittelt
@@ -538,7 +538,7 @@ call p_UpdateLieferantLetzteLieferung('Elite Imports','2014-05-21');
 
 /********************************************************************************************************/
 
--- /F20.1.2.19./ Lagerbestand aktualisieren - p_UpdateLagerbestand
+-- /F10.1.2.19./ Lagerbestand aktualisieren - p_UpdateLagerbestand
 -- Diese Prozedur erwartet als Übergabe einen Stadtnamen, eine Einzelteilzeichnung sowie die Anzahl der gelieferten Artikel
 -- Innerhalb der Prozedur wird durch Aufruf der Funktion fn_GetLagerEinzelteileID die Lager_EteileID ermittelt
 -- Über die Funktionen fn_GetBestand wird der aktuelle Bestand ermittelt
@@ -580,7 +580,7 @@ call p_UpdateLagerbestand('Erfurt', 'Aluminiumkurbelarme', -10);
 
 /********************************************************************************************************/
 
--- /F20.1.2.20./ Lieferdetails-Eintrag anlegen - p_NewLieferDetails 
+-- /F10.1.2.20./ Lieferdetails-Eintrag anlegen - p_NewLieferDetails 
 -- Diese Prozedur erwartet als Übergabe eine Anzahl, einen Stückpreis, einen Stadtnamen, einen Lieferantennamen sowie eine Einzelteilbezeichnung
 -- Innerhalb der Prozedur wird durch den Aufruf der Funktion fn_GetLagerLieferID die Lager_LieferID ermitteln
 -- dass der Lieferant beziehungsweise das Einzelteil für das Lager registriert ist wird über die Funktionen fn_GetLagerLieferantID sowie fn_GetLagerEinzelteileID überprüft
@@ -617,7 +617,7 @@ call p_NewLieferDetails(10,50.00, 'Erfurt', 'Hermes', 'Felgenschwamm');
 
 /********************************************************************************************************/
 
--- /F20.1.2.21./ Neue Lieferung anlegen - p_NewLieferung 
+-- /F10.1.2.21./ Neue Lieferung anlegen - p_NewLieferung 
 -- diese Prozedur erwartet als Übergabe ein Lieferdatum, eine Anzahl sowie einen Stückpreis
 -- sie erstellt einen neuen Datensatz in der Tabelle LIEFERUNG
 
@@ -638,7 +638,7 @@ call p_NewLieferung('2023-07-03', 10, 50.00);
 
 /********************************************************************************************************/
 
--- /F20.1.2./ Wareneingang neu anlegen - Prozedur p_CreateNewWareneingang
+-- /F10.1.2./ Wareneingang neu anlegen - Prozedur p_CreateNewWareneingang
 -- diese Funktion erwartet als Übergabe einen Stadtnamen, Lieferantennamen, eine Einzelteilbezeichnung, eine Anzahl, einen Stückpreis, einen Mindestbestand, Maximalbestand, ein Gewicht 
 DELIMITER $$
 CREATE OR REPLACE procedure p_CreateNewWareneingang(inStadt varchar(30),inLieferantName varchar(50), inEinzeilteilBezeichnung varchar(100), inLieferDatum date, inEinzelteiltyp varchar(50),  inAnzahl int, inStueckpreis decimal (8,2), inMindestBestand int, inMaximalBestand int, inGewicht decimal (8,2))
@@ -692,7 +692,7 @@ DELIMITER ;
 
 /********************************************************************************************************/
 
--- Situation 1: Das Lager in Erfurt hat von den Kunden immer wieder Feedback bekommen, dass die Trittfläche der Roller zu klein ist
+-- Situation 1: Die Customer Service Mitarbeiter in Erfurt haben immer wieder von den Kunden Feedback bekommen, dass die Trittfläche der Roller zu klein ist
 -- daraufhin wurde nach Gesprächen innerhalb der Firmenleitung entschieden, neue Trittflächen zu bestellen, diese wurden jedoch von keinem aktuellen Lieferanten angeboten
 -- der VP-Investement schaute sich demnach nach weiteren externen Lieferanten um und hat eine neue Bestellung angefordert
 -- die Bestellung traf am 04.07.2023 im Lager ein und der Logistiker bekam eine Liste mit Werten, welche er in das System einpflegen soll, wofür er das neue Eingabeformular verwenden möchte
@@ -700,7 +700,7 @@ DELIMITER ;
 -- Stadt: Erfurt
 -- Lieferdatum: 2023-07-04
 -- Einzelteiltyp: Tritt, Bezeichnung: XL-Trittfläche, Mindestbestand: 100, Maximalbestand: 300, Gewicht: 5000g
--- Lieferumpfang: 200 Teile, Stückpreis: 10.00 Euro
+-- Lieferumfang: 200 Teile, Stückpreis: 10.00 Euro
 -- Der Logistiker ruft das neue Formular mit folgenden Werten auf
 
 call p_CreateNewWareneingang('Erfurt', 'Super Transports', 'XL-Trittflaeche', '2023-07-04', 'Tritt', 200, 10.00, 100, 300, 5000.00);
@@ -716,21 +716,21 @@ call p_CreateNewWareneingang('Erfurt', 'Super Transports', 'XL-Trittflaeche', '2
 /********************************************************************************************************/
 
 -- Situation 2: Nachdem die neue XL-Trittfläche so gut in Erfurt angekommen ist, will auch Hamburg das Einzelteil in Ihr Lager aufnehmen, jedoch wird es mittlerweile von Elite Distribution geliefert
--- die Bestellung trifft in Hamburg am 04.07.2023 ein und der Logistiker bekommt eine Liste mit Werten, welche er in das System einpflegen soll, wofür er das neue Eingabeformular verwenden möchte
+-- die Bestellung trifft in Hamburg am 06.07.2023 ein und der Logistiker bekommt eine Liste mit Werten, welche er in das System einpflegen soll, wofür er das neue Eingabeformular verwenden möchte
 -- Lieferant: Elite Distribution
 -- Stadt: Hamburg
--- Lieferdatum: 2023-07-04
+-- Lieferdatum: 2023-07-06
 -- Einzelteiltyp: Tritt, Bezeichnung: XL-Trittfläche, Mindestbestand: 200, Maximalbestand: 500, Gewicht: 5000g
--- Lieferumpfang: 400 Teile, Stückpreis: 8.00 Euro
+-- Lieferumfang: 400 Teile, Stückpreis: 8.00 Euro
 -- Der Logistiker ruft das neue Formular mit folgenden Werten auf
 
-call p_CreateNewWareneingang('Hamburg', 'Elite Distribution', 'XL-Trittflaeche', '2023-07-04', 'Tritt', 400, 8.00, 200, 500, 5000.00);
+call p_CreateNewWareneingang('Hamburg', 'Elite Distribution', 'XL-Trittflaeche', '2023-07-06', 'Tritt', 400, 8.00, 200, 500, 5000.00);
 
 -- er erwartet nach Abschicken des Formulars, dass in der Datenbank neuen Einträge entstanden sind:
 -- Neuer Eintrag in Lager_Einzelteile: (259, 200, 500, 400, 5, 54)
--- Aktualisierung LetzeLieferdatum Elite Distribution auf 2023-07-04
+-- Aktualisierung LetzeLieferdatum Elite Distribution auf 2023-07-06
 -- Neuer Lieferdetails Eintrag: (404, 400, 8.00, 5, 54)
--- Neuer Lieferung Eintrag: (404, 2023-07-04, 3200.00, 404)
+-- Neuer Lieferung Eintrag: (404, 2023-07-06, 3200.00, 404)
 
 /********************************************************************************************************/
 
@@ -739,7 +739,7 @@ call p_CreateNewWareneingang('Hamburg', 'Elite Distribution', 'XL-Trittflaeche',
 -- Stadt: Berlin
 -- Lieferdatum: 2023-07-04
 -- Einzelteiltyp: Motor, Bezeichnung: Elektromotor, Mindestbestand: 350, Maximalbestand: 950, Gewicht: 10000g
--- Lieferumpfang: 87 Teile, Stückpreis: 20.00 Euro
+-- Lieferumfang: 87 Teile, Stückpreis: 20.00 Euro
 -- Der Logistiker ruft das neue Formular mit folgenden Werten auf
 
 call p_CreateNewWareneingang('Berlin', 'Local Imports', 'Elektromotor', '2023-07-04', 'Motor', 87, 20.00, 350, 950, 10000.00);
@@ -752,16 +752,16 @@ call p_CreateNewWareneingang('Berlin', 'Local Imports', 'Elektromotor', '2023-07
 
 /********************************************************************************************************/
 
--- Situation 3, Hamburg bekommt eine weitere Lieferung, welche nicht in den Lager passt
+-- Situation 4, Hamburg bekommt eine weitere Lieferung, welche nicht in den Lager passt
 call p_CreateNewWareneingang('Hamburg', 'Elite Distribution', 'XL-Trittflaeche', '2023-07-04', 'Tritt', 200, 8.00, 200, 500, 5000.00);
 
--- Situation 4, Logistiker verschreibt sich bei der Eingabe der Stadt => System bricht ab da es in der Stadt kein Lager gibt
+-- Situation 5, Logistiker verschreibt sich bei der Eingabe der Stadt => System bricht ab da es in der Stadt kein Lager gibt
 call p_CreateNewWareneingang('Haburg', 'Elite Distribution', 'XL-Trittflaeche', '2023-07-04', 'Tritt', 200, 8.00, 200, 500, 5000.00);
 
--- Situation 5, Logistiker gibt ein Lieferdatum ein, welches in der Zukunft liegt
+-- Situation 6, Logistiker gibt ein Lieferdatum ein, welches in der Zukunft liegt
 call p_CreateNewWareneingang('Hamburg', 'Elite Distribution', 'XL-Trittflaeche', '2024-07-04', 'Tritt', 50, 8.00, 200, 500, 5000.00);
 
--- Situation 6, Logistiker gibt ein Lieferdatum ein, welches weiter in der Vergangneheit liegt, als das letzte Lieferungsdatum des Lieferanten
+-- Situation 7, Logistiker gibt ein Lieferdatum ein, welches weiter in der Vergangneheit liegt, als das letzte Lieferungsdatum des Lieferanten
 call p_CreateNewWareneingang('Hamburg', 'Elite Distribution', 'XL-Trittflaeche', '2023-06-04', 'Tritt', 50, 8.00, 200, 500, 5000.00);
 
 
@@ -773,17 +773,17 @@ call p_CreateNewWareneingang('Hamburg', 'Elite Distribution', 'XL-Trittflaeche',
 
 /********************************************************************************************************/
 
--- /F20.1.2.18./ Standort eines Lagers ermitteln - fn_GetLagerStandortId
+-- /F10.1.2.18./ Standort eines Lagers ermitteln - fn_GetLagerStandortId
 -- Diese Funktion erwartet als Übergabe einen Stadtnamen. Innerhalb der Funktion wird über den Aufruf der Funktion fn_GetLagerId die LagerId ermitteln. Die Funktion liefert die zugehörige StandortId für das jeweilige Lager zurück. Dass es in der Stadt ein Lager gibt, wird durch die Funktion fn_GetLagerId überprüft. 
 
 /********************************************************************************************************/
 
--- /F20.1.2.20./ Roller-Eintrag anlegen - p_NewRoller
+-- /F10.1.2.20./ Roller-Eintrag anlegen - p_NewRoller
 -- Diese Prozedur erwartet als Übergabe ein Datum, welches das letzte Wartungs-Datum repräsentiert (Format: yyyy-mm-dd), sowie einen Stadtnamen. Innerhalb der Prozedur wird durch den Aufruf der Funktion fn_BerechneNächsteWartung das nächste Wartungs-Datum ermittelt. Die Werte IstDefekt sowie Batterie werden als Standardwerte auf 0 beziehungsweise 100 gesetzt. Über den Aufruf der Funktion fn_GetLagerId wird mittels Übergabe des Stadtnamens die LagerId ermittelt. Die Funktion fn_GetLagerStandortId ermitteln die StandortId. Die Prozedur fügt daraufhin einen neuen Datensatz in der Tabelle EROLLER ein.
 
 /********************************************************************************************************/
 
--- /F20.1.2.21./ Neues Wartungs-Datum ermitteln - fn_BerechneNächsteWartung
+-- /F10.1.2.21./ Neues Wartungs-Datum ermitteln - fn_BerechneNächsteWartung
 -- Diese Funktion erwartet als Eingabe ein Datum (Format: yyyy-mm-dd) und ermittelt nach einer Berechnungsvorschrift (durch Geschäftsbedingungen festgelegt) das nächste Wartungsdatum und liefert dieses zurück. 
 
 /********************************************************************************************************/
