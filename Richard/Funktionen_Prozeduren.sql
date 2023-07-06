@@ -815,3 +815,44 @@ call p_CreateNewWareneingang('Hamburg', 'Elite Distribution', 'XL-Trittflaeche',
 -- Diese Funktion erwartet als Eingabe ein Datum (Format: yyyy-mm-dd) und ermittelt nach einer Berechnungsvorschrift (durch Geschäftsbedingungen festgelegt) das nächste Wartungsdatum und liefert dieses zurück. 
 
 /********************************************************************************************************/
+
+
+-- /F10.1.1./ Lieferungsübersicht anzeigen lassen - Prozedur p_CreateLieferungÜbersicht
+
+-- Im folgenden wird noch eine Prozedur erstellt, welche zur Erstellung einer Lieferungsübersicht dienen soll
+-- als Eingabe erwartet die Prozedur ein Datum, welche den Zeitraum definiert über welchen die Übersicht erstellt werden soll (Eingabedatum bis aktuelles Datum)
+-- In der Übersicht soll auftauchen: Lager, Lieferant,Einzelteil, Stückzahl, Gesamtpreis, Lieferdatum
+-- Die Übersicht soll nach Lager und den jeweiligen Lieferanten sortiert werden und die teuerste Lieferung stets ganz oben angezeigt werden
+
+DELIMITER $$
+CREATE OR REPLACE PROCEDURE p_CreateLieferungÜbersicht(inStartDatum DATE, inEndDatum date)
+BEGIN
+    SELECT s.Stadt AS 'Lager (Stadt)', li.LieferantName AS Lieferant,e.EName as Einzelteil, ld.Anzahl as 'Anzahl der Einzelteile', l.GesamtPreis AS Gesamtpreis, l.LieferDatum AS Lieferdatum
+    FROM lieferung l
+    JOIN lieferdetails ld ON l.lieferdetailsID = ld.lieferdetailsID
+    JOIN lager_lieferant lf ON ld.Lager_LieferID = lf.Lager_LieferID
+    JOIN lieferant li ON lf.LieferantID = li.LieferantID
+    JOIN lager la ON la.LagerID = lf. LagerID
+    JOIN standort s on s.StandortID = la.StandortID
+    JOIN einzelteile e on e.EinzelteileID = ld.EinzelteileID
+    WHERE (l.Lieferdatum >= inStartDatum) and (l.Lieferdatum <= inEndDatum)
+    ORDER BY la.LagerID, li.LieferantName, l.LieferDatum ASC;
+END $$
+DELIMITER ;
+
+-- Testfälle
+-- 1. Fall, der Abteilungsleiter will eine Übersicht über alle gelieferten Artikel in der Woche vom 03.-07.07.2023 erstellen lassen
+-- er ruft die Prozedur mit den folgenden  Werten auf und erwartet bei Erfolg folgende Ausgabe:
+
+-- Lager (Stadt)   Lieferant	        Einzelteil        Anzahl der Einzelteile    Gesamtpreis    Lieferdatum	
+-- ERFURT          Hermes               OLED-Display      20                        2000.00        2023-07-03
+-- ERFURT          Hermes               OLED-Display      10                        500.00         2023-07-03
+-- ERFURT          Super Transports     XL-Trittflaeche   200                       2000.00        2023-07-04
+-- BERLIN          Local Imports        Elektromotor      87                        1740.00        2023-07-04
+-- HAMBURG         Elite Distribution   XL-Trittflaeche   400                       3200.00        2023-07-05
+
+call p_CreateLieferungÜbersicht('2023-07-03', '2023-07-07');
+
+/********************************************************************************************************/
+
+
