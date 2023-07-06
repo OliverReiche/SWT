@@ -281,7 +281,7 @@ CREATE TABLE IF NOT EXISTS FAHRTENBUCH
     ,Fahrtdauer	        time	            null	-- Berechnet: |Fahrtstart - Fahrtende|
     ,FirmenwagenID	    integer	        not null	-- FK, Referenz auf Fuhrpark.FirmenwagenID
     ,MitarbeiterID	    integer	        not null	-- FK, Referenz auf Mitarbeiter.MitarbeiterID
-    ,RollerEingesamelt	integer	        not null
+    ,RollerEingesamelt	integer	            null
     ,CONSTRAINT fahrtenbuch_pk PRIMARY KEY (FahrtenbuchID)
 );
 
