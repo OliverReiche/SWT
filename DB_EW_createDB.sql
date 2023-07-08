@@ -266,7 +266,7 @@ CREATE TABLE IF NOT EXISTS FUHRPARK
 (
      FirmenwagenID	    integer	        not null
     ,AutoType	        varchar(50)	    not null	
-    ,NächsteWartung	    date	        not null	
+    ,NaechsteWartung	date	        not null	
     ,LagerID	        integer	        not null	-- FK, Referenz auf Lager.LagerID
     ,CONSTRAINT firmenwagen_pk PRIMARY KEY (FirmenwagenID)
 );
@@ -276,7 +276,7 @@ DROP TABLE IF EXISTS FAHRTENBUCH;
 CREATE TABLE IF NOT EXISTS FAHRTENBUCH
 (
      FahrtenbuchID	    integer	        not null	AUTO_INCREMENT
-    ,Fahrtstart	        timestamp	    not null	
+    ,Fahrtstart	        timestamp	        null	-- Keine lust auf Automatisches ON UPDATE CURRENT_TIMESTAMP()
     ,Fahrtende	        timestamp	        null	
     ,Fahrtdauer	        time	            null	-- Berechnet: |Fahrtstart - Fahrtende|
     ,FirmenwagenID	    integer	        not null	-- FK, Referenz auf Fuhrpark.FirmenwagenID

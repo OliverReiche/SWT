@@ -606,6 +606,15 @@ DELIMITER ;
 -- Test
 call p_SetAllGesamtPreisERollerBuchung(); -- ok
 
+
+-- --------------------------------------------------------
+
+-- Ergaenzt die Fahrtdauer der Fahrtenbuch Tabelle 
+
+UPDATE fahrtenbuch
+set Fahrtdauer = from_unixtime(((UNIX_TIMESTAMP(Fahrtstart) - UNIX_TIMESTAMP(Fahrtende)) * (-1)), '%h:%i:%s');
+
+
 -- --------------------------------------------------------
 
 -- Insert´s für White Box tests 
@@ -634,3 +643,8 @@ values ('2023-07-03', 2000.00, 401);
 
 
 -- --------------------------------------------------------
+
+-- Ergaenzt die Fahrtdauer der Fahrtenbuch Tabelle 
+
+UPDATE fahrtenbuch
+set Fahrtdauer = from_unixtime(((UNIX_TIMESTAMP(Fahrtstart) - UNIX_TIMESTAMP(Fahrtende)) * (-1)), '%h:%i:%s');
