@@ -126,13 +126,30 @@ begin
 
     DECLARE AbbruchJobName CONDITION FOR SQLSTATE '45000';
     DECLARE AbbruchMitarbeiterStandort CONDITION FOR SQLSTATE '45000';
+    DECLARE NichtAbgeschlossenerEintrag CONDITION FOR SQLSTATE '45000';
+    DECLARE AutoIstNochInBenutzung CONDITION FOR SQLSTATE '45000';
 
     if fn_GetFirmenwagenStandort(inFirmenwagenID) = fn_GetMitarbeiterStandort(inMitarbeiterID)
         then
 
         if STRCMP((select JobName from mitarbeiter where MitarbeiterID = inMitarbeiterID), 'KFZ-WH') = 0
             then
-            set vIntegritaet = 1;
+
+                if IFNUll((select Fahrtende from Fahrtenbuch where MitarbeiterID = inMitarbeiterID having max(Fahrtstart) < Fahrtende),-1) != -1
+                    then
+
+                        if IFNUll((select Fahrtende from Fahrtenbuch where FirmenwagenID = inFirmenwagenID having max(Fahrtstart) < Fahrtende),-1) != -1
+                            then
+                            set vIntegritaet = 1;
+                        
+                        else
+                            SIGNAL AutoIstNochInBenutzung SET MESSAGE_TEXT ="Das Ausgewealte Firmenfahrzeug ist noch in Benutztung";
+                        end if;
+
+                else
+                    SIGNAL NichtAbgeschlossenerEintrag SET MESSAGE_TEXT ="Mitarbeiter hat noch einen nicht abgeschlossen Fahrtenbucheintrag";
+                end if; 
+
         else
             SIGNAL AbbruchJobName SET MESSAGE_TEXT = 'Nicht passender JobName';
         end if;
@@ -141,19 +158,23 @@ begin
         SIGNAL AbbruchMitarbeiterStandort SET MESSAGE_TEXT = 'Mitarbeiter und Lager/Fahrzeug sind nicht an Selben Standort/Region';
     end if;
 
+
     return IFNUll(vIntegritaet, -1);
 end $$
 DELIMITER ;
 
+
+
 -- SELECT fn_CheckIntegritaet(1 , 1)
--- > -1 nicht zusammen passender Standort
--- SELECT fn_CheckIntegritaet(1 , 15)
 -- > -1 nicht passender JobName
+-- SELECT fn_CheckIntegritaet(1 , 15)
+-- > -1 nicht zusammen passender Standort
 -- SELECT fn_CheckIntegritaet(1 , 9)
 -- > 1 alles geht
-
---> wird der wagen schon benutzt
---> benutzt der Fahrer schon den einen Wagen
+-- SELECT fn_CheckIntegritaet(17 , 25)
+-- wenn neu erstell und nicht abgeschlossen geht nicht
+-- SELECT fn_CheckIntegritaet(17 , 43)
+-- geht nich weil Fahrzeug von Arbeiter 25 benutzt
 
 /********************************************************************************************************/
 /********************************************************************************************************/
@@ -185,8 +206,6 @@ values (CURRENT_TIMESTAMP(), inFirmenwagenID, vMitarbeiterID);
 end$$
 DELIMITER ;
 
--- CALL p_CreateFahrtenbuch(17,'y.koch@EcoWheels.com')
--- geht
 -- CALL p_CreateFahrtenbuch(11,'y.koch@EcoWheels.com')
 -- geht nicht Intigrität
 -- CALL p_CreateFahrtenbuch(17,'y.koch@yahoomail.com')
@@ -195,7 +214,15 @@ DELIMITER ;
 -- geht nicht schreibfehler
 -- CALL p_CreateFahrtenbuch(17,'X.koch@EcoWheels.com')
 -- geht nicht kein solcher Mitarbeiter
+-- CALL p_CreateFahrtenbuch(17,'y.koch@EcoWheels.com')
+-- geht
+-- CALL p_CreateFahrtenbuch(17, 'y.koch@EcoWheels.com')
+-- geht nicht Fahrtenbucheintrag noch nicht Abgeschlossen
+-- CALL p_CreateFahrtenbuch(17, 'r.kaiser@EcoWheels.com')
+-- geht nicht weil Fahrzeug noch in Benutzung
 
+-- warum geht das nur über die Konsole bzw als SQL Begehl und nicht die Abgespeicherte Routine????
+-- also es geht halt trotzdem nicht spuckt aber keine Fehler aus
 
 /********************************************************************************************************/
 
@@ -241,7 +268,7 @@ DELIMITER ;
 -- schon Abgeschlossen
 
 /********************************************************************************************************/
-
+-- /F 40.2.2/
 DELIMITER $$
 create or replace procedure p_UpdateWartung
 (inFirmenwagenID int, inNewWartung date)
@@ -336,9 +363,69 @@ end$$
 DELIMITER ;
 
 -- call p_RollerInLager(1)
+/********************************************************************************************************/
+-- /F 40.1.2./
+DELIMITER $$
+create or replace procedure p_FahrtenbuchAnzeigen
+(inFahrtenbuchID int)
+begin
+
+    select Concat(p.Nachname,' ' , p.Vorname) AS MitarbeiterName ,Fahrtstart, Fahrtende, Fahrtdauer, RollerEingesamelt, FirmenwagenID
+    From Fahrtenbuch F
+    Join Mitarbeiter M on F.MitarbeiterID = M.MitarbeiterID
+    Join Privatinfo P on M.PrivatinfoID = P.PrivatinfoID
+    where FahrtenbuchID = inFahrtenbuchID;
+
+    Select Sleep(1);
+
+    select Zeitpunkt, Concat(S.PLZ, ' ', lower(S.Stadt), ' ', S.Strasse) AS Abholpunkt, ERollerID
+    From Fahrtenbuch F
+    Join Haltepunkt H on H.FahrtenbuchID = F.FahrtenbuchID
+    Join Standort S on S.StandortID = H.StandortID
+    Join ERoller ER on ER.HaltepunktID = H.HaltepunktID
+    where F.FahrtenbuchID = inFahrtenbuchID;
+
+end$$
+DELIMITER ;
+
+-- call p_FahrtenbuchAnzeigen(1)
+-- Commands out of sync; you can't run this command now
 
 /********************************************************************************************************/
+-- /F 40.2.3/
+DELIMITER $$
+create or replace procedure p_CreateFirmenwagen
+(inFirmenwagenID int, inAutoType varchar(50), inNaechsteWartung Date, inLagerID int)
+begin
 
+    insert into fuhrpark
+    values (inFirmenwagenID, inAutoType, inNaechsteWartung, inLagerID);
+
+end$$
+DELIMITER ;
+
+-- call p_CreateFirmenwagen(1067, 'VW Crafter 2019', '2025-11-11', 1);
+
+
+/********************************************************************************************************/
+-- /F 40.2.1/
+DELIMITER $$
+create or replace procedure p_ShowWartung
+(inFirmenwagenID int)
+begin
+
+    select NaechsteWartung
+    from fuhrpark
+    where FirmenwagenID = inFirmenwagenID;
+
+end$$
+DELIMITER ;
+
+-- call p_ShowWartung(1)
+
+
+/********************************************************************************************************/
+-- /F 40.1.3./
 DELIMITER $$
 create or replace procedure p_Fahrtenbuch
 (inFirmenwagenID int, inMitarbeiterEmail varchar(100), inFahrtenbuchID int)
@@ -371,5 +458,3 @@ DELIMITER ;
 
 
 -- Random Haltepunkt einfügen zum Testen in CSV???
-
--- prozedur RollerZumSammelPunktFahrten lassen siehe syntax  nicht machen -- + beschreibung
