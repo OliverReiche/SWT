@@ -7,6 +7,7 @@
 
 
 /********************************************************************************************************/
+-- /F 40.1.2.11./
 
 DELIMITER $$
 create or replace function fn_GetRollerStandort (inRollerID int)
@@ -23,7 +24,7 @@ DELIMITER ;
 -- SELECT fn_GetRollerStandort (1);
 
 /********************************************************************************************************/
-
+-- /F 40.1.2.9./
 -- Uberprüft ob ein E-Roller von einem Mitarbeiter eingesammelt wurde
 -- Wenn ein Haltepunkt des vorhanden ist gib die Fuktion diesen zurück sonst -1
 
@@ -42,6 +43,7 @@ DELIMITER ;
 -- SELECT fn_CheckRollerStatusH(1);
 
 /********************************************************************************************************/
+-- /F 40.1.2.8./
 
 DELIMITER $$
 create or replace function fn_CalculateFahrtdauer (inFahrtenbuchID int)
@@ -61,6 +63,7 @@ DELIMITER ;
 -- SELECT fn_CalculateFahrtdauer(1)
 
 /********************************************************************************************************/
+-- /F 40.1.2.7./
 
 DELIMITER $$
 create or replace function fn_GetMitarbeiterStandort (inMitarbeiterID int)
@@ -77,10 +80,9 @@ DELIMITER ;
 -- SELECT fn_GetMitarbeiterStandort(1)
 
 /********************************************************************************************************/
-
+-- /F 40.1.2.4.
 -- inBuisnessEmail ist halt der einzige Unique key um eine Mitarbeiter Auserhalt von Seiner ID oder von Zusammegesetzten werten zu indentifizieren
 -- wenn nicht vorhanden gib -1 zurück
-
 
 DELIMITER $$
 create or replace function fn_GetMitarbeiterID (inBusinessEmail varchar(100))
@@ -98,6 +100,7 @@ DELIMITER ;
 -- retruns 25
 
 /********************************************************************************************************/
+-- /F 40.1.2.6./
 
 DELIMITER $$
 create or replace function fn_GetFirmenwagenStandort (inFirmenwagenID int)
@@ -117,6 +120,7 @@ DELIMITER ;
 -- SELECT fn_GetFirmenwagenStandort(1)
 
 /********************************************************************************************************/
+-- /F 40.1.2.5./
 
 DELIMITER $$
 create or replace function fn_CheckIntegritaet(inFirmenwagenID int, inMitarbeiterID int)
@@ -179,8 +183,7 @@ DELIMITER ;
 /********************************************************************************************************/
 /********************************************************************************************************/
 /********************************************************************************************************/
-
-
+-- /F 40.1.2.1./
 
 DELIMITER $$
 create or replace procedure p_CreateFahrtenbuch
@@ -225,6 +228,7 @@ DELIMITER ;
 -- also es geht halt trotzdem nicht spuckt aber keine Fehler aus
 
 /********************************************************************************************************/
+-- /F 40.1.2.2./
 
 DELIMITER $$
 create or replace procedure p_FinishFahrtenbuch
@@ -269,6 +273,7 @@ DELIMITER ;
 
 /********************************************************************************************************/
 -- /F 40.2.2/
+
 DELIMITER $$
 create or replace procedure p_UpdateWartung
 (inFirmenwagenID int, inNewWartung date)
@@ -293,6 +298,7 @@ DELIMITER ;
 -- geht 2023-11-17 in tabelle eingetragen
 
 /********************************************************************************************************/
+-- /F 40.1.2.3./ 
 -- nimmt Standort vom Roller weil die Halt nur bei Rollern anhalten sollen
 
 DELIMITER $$
@@ -341,6 +347,7 @@ DELIMITER ;
 -- Fehler Roller Existiert nicht
 
 /********************************************************************************************************/
+-- /F 40.1.2.10./
 
 DELIMITER $$
 create or replace procedure p_RollerInLager
@@ -364,7 +371,8 @@ DELIMITER ;
 
 -- call p_RollerInLager(1)
 /********************************************************************************************************/
--- /F 40.1.2./
+-- /F 40.1.1./
+
 DELIMITER $$
 create or replace procedure p_FahrtenbuchAnzeigen
 (inFahrtenbuchID int)
@@ -393,6 +401,7 @@ DELIMITER ;
 
 /********************************************************************************************************/
 -- /F 40.2.3/
+
 DELIMITER $$
 create or replace procedure p_CreateFirmenwagen
 (inFirmenwagenID int, inAutoType varchar(50), inNaechsteWartung Date, inLagerID int)
@@ -409,6 +418,7 @@ DELIMITER ;
 
 /********************************************************************************************************/
 -- /F 40.2.1/
+
 DELIMITER $$
 create or replace procedure p_ShowWartung
 (inFirmenwagenID int)
@@ -425,7 +435,8 @@ DELIMITER ;
 
 
 /********************************************************************************************************/
--- /F 40.1.3./
+-- /F 40.1.2./
+
 DELIMITER $$
 create or replace procedure p_Fahrtenbuch
 (inFirmenwagenID int, inMitarbeiterEmail varchar(100), inFahrtenbuchID int)
