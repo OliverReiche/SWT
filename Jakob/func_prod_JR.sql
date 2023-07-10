@@ -147,11 +147,11 @@ begin
                             set vIntegritaet = 1;
                         
                         else
-                            SIGNAL AutoIstNochInBenutzung SET MESSAGE_TEXT ="Das Ausgewealte Firmenfahrzeug ist noch in Benutztung";
+                            SIGNAL AutoIstNochInBenutzung SET MESSAGE_TEXT ='Das Ausgewealte Firmenfahrzeug ist noch in Benutztung';
                         end if;
 
                 else
-                    SIGNAL NichtAbgeschlossenerEintrag SET MESSAGE_TEXT ="Mitarbeiter hat noch einen nicht abgeschlossen Fahrtenbucheintrag";
+                    SIGNAL NichtAbgeschlossenerEintrag SET MESSAGE_TEXT ='Mitarbeiter hat noch einen nicht abgeschlossen Fahrtenbucheintrag';
                 end if; 
 
         else
@@ -265,6 +265,10 @@ begin
     set RollerEingesamelt   = vHilfMir
     where FahrtenbuchID     = inFahrtenbuchID;
 
+	CALL p_RollerInLager(inFahrtenbuchID);
+	-- nochmal Testen
+	
+	
 end$$
 DELIMITER ;
 
