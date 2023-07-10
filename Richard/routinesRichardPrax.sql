@@ -825,7 +825,7 @@ call p_CreateNewWareneingang('Hamburg', 'Elite Distribution', 'XL-Trittflaeche',
 -- Die Übersicht soll nach Lager und den jeweiligen Lieferanten sortiert werden und die teuerste Lieferung stets ganz oben angezeigt werden
 
 DELIMITER $$
-CREATE OR REPLACE PROCEDURE p_CreateLieferungÜbersicht(inStadt varchar(30) default '', inStartDatum DATE, inEndDatum date)
+CREATE OR REPLACE PROCEDURE p_CreateLieferungÜbersicht(inStadt varchar(30), inStartDatum DATE, inEndDatum date)
 BEGIN
 
     if inStadt = ''
@@ -868,7 +868,7 @@ DELIMITER ;
 
 -- durch die null übergabe soll der default wert verwendet werden
 
-call p_CreateLieferungÜbersicht(null,'2023-07-03', '2023-07-07');
+call p_CreateLieferungÜbersicht('','2023-07-03', '2023-07-07');
 
 -- 2. Fall, der Abteilungsleiter in Erfurt will eine Übersicht über alle gelieferten Artikel (nur zum Lager Erfurt) in der Woche vom 03.-07.07.2023 erstellen lassen
 -- er ruft die Prozedur mit den folgenden  Werten auf und erwartet bei Erfolg folgende Ausgabe:
@@ -891,7 +891,7 @@ call p_CreateLieferungÜbersicht('Erfurt','2023-07-03', '2023-07-07');
 -- die Ausgabe wird sortiert nach der Anzah der Buchungen, wobei die meisten Nutzungen ganz oben stehen sollen
 
 DELIMITER $$
-CREATE OR REPLACE VIEW bliblablub
+CREATE OR REPLACE procedure p_CreateKundenStatistik()
 BEGIN
     SELECT CONCAT(k.Vorname, ' ', k.Nachname) as Kunde, COUNT(*) AS 'Anzahl der Buchungen',   
            SUBSTRING(SEC_TO_TIME(AVG(TIME_TO_SEC(Nutzdauer))), 1, 8) AS 'Durchschnittliche Nutzungsdauer',
@@ -905,6 +905,8 @@ BEGIN
 END $$
 DELIMITER ; 
 
+call p_CreateKundenStatistik(); --  > ok
 
+/********************************************************************************************************/
 
 
