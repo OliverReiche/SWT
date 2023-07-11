@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Erstellungszeit: 10. Jul 2023 um 11:54
--- Server-Version: 10.4.24-MariaDB
--- PHP-Version: 8.1.6
+-- Erstellungszeit: 11. Jul 2023 um 08:31
+-- Server-Version: 10.4.25-MariaDB
+-- PHP-Version: 8.1.10
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -27,6 +27,19 @@ DELIMITER $$
 --
 -- Prozeduren
 --
+DROP PROCEDURE IF EXISTS `p_CreateKundenStatistik`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `p_CreateKundenStatistik` ()   BEGIN
+    SELECT CONCAT(k.Vorname, ' ', k.Nachname) as Kunde, COUNT(*) AS 'Anzahl der Buchungen',   
+           SUBSTRING(SEC_TO_TIME(AVG(TIME_TO_SEC(Nutzdauer))), 1, 8) AS 'Durchschnittliche Nutzungsdauer',
+           ROUND(AVG(GesamtFahrstecke), 2) AS 'Durchschnittliche Fahrtstrecke',
+           SEC_TO_TIME(SUM(TIME_TO_SEC(Nutzdauer))) AS 'Gesamte Nutzungsdauer',
+           SUM(GesamtFahrstecke) AS 'Gesamte Fahrstrecke'
+        FROM bestellung_eroller be
+        join kunde k on be.KundeID = k.KundeID
+        GROUP BY k.KundeID
+        ORDER BY 2 DESC;
+END$$
+
 DROP PROCEDURE IF EXISTS `p_CreateLieferungÜbersicht`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `p_CreateLieferungÜbersicht` (`inStadt` VARCHAR(30), `inStartDatum` DATE, `inEndDatum` DATE)   BEGIN
 
@@ -41,7 +54,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `p_CreateLieferungÜbersicht` (`inSt
             JOIN standort s on s.StandortID = la.StandortID
             JOIN einzelteile e on e.EinzelteileID = ld.EinzelteileID
             WHERE (l.Lieferdatum >= inStartDatum) and (l.Lieferdatum <= inEndDatum)
-            ORDER BY la.LagerID, li.LieferantName, l.LieferDatum ASC, l.GesamtPreis ASC;
+            ORDER BY la.LagerID, li.LieferantName, l.LieferDatum ASC;
     else
             SELECT s.Stadt AS 'Lager (Stadt)', li.LieferantName AS Lieferant,e.EName as Einzelteil, ld.Anzahl as 'Anzahl der Einzelteile', l.GesamtPreis AS Gesamtpreis, l.LieferDatum AS Lieferdatum
             FROM lieferung l
@@ -52,7 +65,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `p_CreateLieferungÜbersicht` (`inSt
             JOIN standort s on s.StandortID = la.StandortID
             JOIN einzelteile e on e.EinzelteileID = ld.EinzelteileID
             WHERE (l.Lieferdatum >= inStartDatum) and (l.Lieferdatum <= inEndDatum) and (s.Stadt = UPPER(inStadt))
-            ORDER BY la.LagerID, li.LieferantName, l.LieferDatum ASC, l.GesamtPreis ASC;
+            ORDER BY la.LagerID, li.LieferantName, l.LieferDatum ASC;
 	end if;
 END$$
 
