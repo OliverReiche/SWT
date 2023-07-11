@@ -491,30 +491,35 @@ DELIMITER ;
 
 
 /********************************************************************************************************/
--- /F 50.2./ Kundenstatistik für APP käufe erstellen
--- Diese Sicht zeigt die Durchschnittszahlung bei App Nutzung für jede Stadt in den letzten 90 Tagen.
+-- /F 50.2./ Buchungsstatistiken für APP käufe erstellen
+-- Diese Sicht zeigt die Durchschnittszahlung aller Nutzer pro Stadt geteilt in APP und Karte für die letzten 120 Tagen.
 
-create or replace view KundenStatView(Stadt, Durchschnittszahlung_App)
+create or replace view BuchungsStatView(Stadt, Durchschnittszahlung, ZahlungsType, Verkaufsanteil)
 as
 select  
         S.Stadt,
-        AVG(Z.GesamtPreis)
+        Concat(cast(AVG(Z.GesamtPreis) as float),' Euro'),
+        replace(replace(ZahlungsType,'A','APP'),'K','Kundenkarte'),
+        Concat(cast(
+                count(Z.ZMethodID) * 100.0 / 
+        	    (select count(*) from Zahlung Z
+                join Bestellung_ERoller BER on BER.BestellERID = Z.BestellERID
+                join Kunde K on K.KundeID = BER.KundeID
+                where DATEDIFF(now(),K.LetzteNutzung) < 120)
+        as float), '%')
+
 from Kunde K
 join Standort S on S.StandortID = K.WohnortID
 join Kundenkonto KK on KK.KKontoID = K.KKontoID
 join Bestellung_ERoller BER on BER.KundeID = K.KundeID
 join Zahlung Z on Z.BestellERID = BER.BestellERID
 join Zahlungsmethode ZM on ZM.ZMethodID = Z.ZMethodID
-where ZM.ZahlungsType = 'A' and DATEDIFF(now(),K.LetzteNutzung) < 90
-group by S.Stadt;
+where DATEDIFF(now(),K.LetzteNutzung) < 120
+group by S.Stadt ,ZM.ZahlungsType;
 
-
-Select * From KundenStatView;
-
+SELECT * from  BuchungsStatView
 
 -- Prozentualer Ansatz Karte/app
 -- AVG Zahlung pro app
--- letzte 90 Tage
+-- letzte 120 Tage
 -- alle pro Stadt
-
--- Select * From KundenStatView;
