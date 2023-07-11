@@ -4,8 +4,6 @@
 -- durch Jakob Roch Projektgruppe C5
 -- Datenbank mit Tabellen für EcoWheels Verwaltungssystem
 
-
-
 /********************************************************************************************************/
 -- /F 40.1.2.11./ E-Roller Standort ermitteln
 -- Diese Helper-Funktion ermittelt aus der Eingabe (RollerID) die zugehörige ID des Standort (StandortID). 
@@ -22,7 +20,8 @@ BEGIN
 end $$
 DELIMITER ;
 
--- SELECT fn_GetRollerStandort (1);
+SELECT fn_GetRollerStandort (1);
+-- Ergebnis: 148
 
 /********************************************************************************************************/
 -- /F 40.1.2.9./ E-Roller Status ermitteln für Haltepunkte
@@ -41,7 +40,8 @@ BEGIN
 end $$
 DELIMITER ;
 
--- SELECT fn_CheckRollerStatusH(1);
+SELECT fn_CheckRollerStatusH(1);
+-- Ergebnis: -1
 
 /********************************************************************************************************/
 -- /F 40.1.2.8./ Fahrtdauer berechnen
@@ -63,7 +63,8 @@ BEGIN
 end $$
 DELIMITER ;
 
--- SELECT fn_CalculateFahrtdauer(1)
+SELECT fn_CalculateFahrtdauer(1);
+-- Ergebnis: 05:44:39
 
 /********************************************************************************************************/
 -- /F 40.1.2.7./ Mitarbeiter Standort ermitteln
@@ -81,11 +82,12 @@ BEGIN
 end $$
 DELIMITER ;
 
--- SELECT fn_GetMitarbeiterStandort(1)
+SELECT fn_GetMitarbeiterStandort(1);
+-- Ergebnis: 101
 
 /********************************************************************************************************/
 -- /F 40.1.2.4. MitarbeiterID ermitteln
--- Diese Helper-Funktion ermittelt aus der Eingabe (BusinessMail) die zugehörige ID des Standort (MitarbeiterID)
+-- Diese Helper-Funktion ermittelt aus der Eingabe (BusinessMail) die zugehörige ID des Mitarbeites (MitarbeiterID)
 -- wenn die Email nicht vorhanden der Mitarbeiter Tabelle vorhanden ist wird -1 zurückgegeben
 
 DELIMITER $$
@@ -100,8 +102,8 @@ BEGIN
 end $$
 DELIMITER ;
 
--- SELECT fn_GetMitarbeiterID('y.koch@EcoWheels.com')
--- retruns 25
+SELECT fn_GetMitarbeiterID('y.koch@EcoWheels.com');
+-- Ergebnis: 25
 
 /********************************************************************************************************/
 -- /F 40.1.2.6./ Firmenwagen Standort ermitteln
@@ -122,7 +124,10 @@ BEGIN
 end $$
 DELIMITER ;
 
--- SELECT fn_GetFirmenwagenStandort(1)
+SELECT fn_GetFirmenwagenStandort(1);
+-- Ergebnis: 101
+SELECT fn_GetFirmenwagenStandort(20);
+-- Ergebnis: 1
 
 /********************************************************************************************************/
 -- /F 40.1.2.5./ Fahrtenbucheintrag auf Integrität prüfen
@@ -181,16 +186,23 @@ DELIMITER ;
 
 
 
--- SELECT fn_CheckIntegritaet(1 , 1)
--- > -1 nicht passender JobName
--- SELECT fn_CheckIntegritaet(1 , 15)
--- > -1 nicht zusammen passender Standort
--- SELECT fn_CheckIntegritaet(1 , 9)
--- > 1 alles geht
--- SELECT fn_CheckIntegritaet(17 , 25)
--- wenn neu erstellt und nicht abgeschlossen geht nicht
--- SELECT fn_CheckIntegritaet(17 , 43)
--- geht nich weil Fahrzeug von Arbeiter 25 benutzt
+SELECT fn_CheckIntegritaet(1 , 1);
+-- Ergebnis: FEHLER, -1, nicht passender JobName
+SELECT fn_CheckIntegritaet(1 , 15);
+-- Ergebnis: FEHLER, -1, Mitarbeiter und Lager/Fahrzeug sind nicht an Selben Standort/Region
+
+
+-- Testfall
+Insert Into Fahrtenbuch(Fahrtstart, FirmenwagenID, MitarbeiterID)
+values(CURRENT_TIMESTAMP, 17, 25);
+
+SELECT fn_CheckIntegritaet(18 , 25);
+-- Ergebnis: FEHLER, Mitarbeiter hat noch einen offenen Eintrag
+SELECT fn_CheckIntegritaet(17 , 43);
+-- Ergebnis: FEHLER, geht nich weil Fahrzeug von Arbeiter 25 benutzt
+
+SELECT fn_CheckIntegritaet(1 , 9);
+-- Ergebnis: 1 alles geht
 
 /********************************************************************************************************/
 /********************************************************************************************************/
@@ -224,23 +236,23 @@ values (CURRENT_TIMESTAMP(), inFirmenwagenID, vMitarbeiterID);
 end$$
 DELIMITER ;
 
--- CALL p_CreateFahrtenbuch(11,'y.koch@EcoWheels.com')
--- geht nicht Intigrität
--- CALL p_CreateFahrtenbuch(17,'y.koch@yahoomail.com')
--- geht nicht email unbekannt
--- CALL p_CreateFahrtenbuch(17,'y.koch@EcoWheelz.com')
--- geht nicht schreibfehler
--- CALL p_CreateFahrtenbuch(17,'X.koch@EcoWheels.com')
--- geht nicht kein solcher Mitarbeiter
--- CALL p_CreateFahrtenbuch(17,'y.koch@EcoWheels.com')
--- geht
--- CALL p_CreateFahrtenbuch(17, 'y.koch@EcoWheels.com')
--- geht nicht Fahrtenbucheintrag noch nicht Abgeschlossen
--- CALL p_CreateFahrtenbuch(17, 'r.kaiser@EcoWheels.com')
--- geht nicht weil Fahrzeug noch in Benutzung
+call p_CreateFahrtenbuch(11,'y.koch@EcoWheels.com');
+-- Ergebnis: FEHLER, Mitarbeiter und Lager/Fahrzeug sind nicht an Selben Standort/Region
+call p_CreateFahrtenbuch(17,'y.koch@yahoomail.com');
+-- Ergebnis: FEHLER, geht nicht email unbekannt
+call p_CreateFahrtenbuch(17,'y.koch@EcoWheelz.com');
+-- Ergebnis: FEHLER, geht nicht schreibfehler
+call p_CreateFahrtenbuch(17,'X.koch@EcoWheels.com');
+-- Ergebnis: FEHLER, geht nicht kein solcher Mitarbeiter
 
--- warum geht das nur über die Konsole bzw als SQL Begehl und nicht die Abgespeicherte Routine????
--- also es geht halt trotzdem nicht spuckt aber keine Fehler aus
+-- Ist der Selbe Tesfall wie in /F 40.1.2.5./ Fahrtenbucheintrag auf Integrität prüfen
+call p_CreateFahrtenbuch(17, 'y.koch@EcoWheels.com');
+-- Ergebnis: FEHLER, geht nicht Fahrtenbucheintrag noch nicht Abgeschlossen
+call p_CreateFahrtenbuch(17, 'r.kaiser@EcoWheels.com');
+-- Ergebnis: FEHLER, geht nicht weil Fahrzeug noch in Benutzung
+
+call p_CreateFahrtenbuch(19, 't.vogel@EcoWheels.com');
+-- Ergebnis: geht
 
 /********************************************************************************************************/
 -- /F 40.1.2.10./ Aktualisierung wenn E-Roller in Lager ankommt
@@ -266,7 +278,70 @@ begin
 end$$
 DELIMITER ;
 
--- call p_RollerInLager(1)
+
+-- Testfall
+-- bitte nicht beachten das für den Test am Anfang Haltepunkt und Roller StandortID nicht zusammmenpassen
+update ERoller
+set HaltepunktID =(RAND()*(76-72)+72)
+where ERollerID between 1 and 5;
+
+-- Haltepunkte 72-76 gehören zu Fahrtenbucheintrag 21
+-- das passende Lager hat den Standort 101
+
+call p_RollerInLager(21);
+-- Ergebnis: geht
+
+/********************************************************************************************************/
+-- /F 40.1.2.3./ Haltepunkt anlegen
+-- Diese Prozedur erstellt einen Haltepunkt in der Haltepunkt Tabelle und fügt den FK bei dem Zugehörigen ERoller hinzu
+-- Abbruchbedingungen sind der Roller ist schon einen Haltepunkt zu geordnet und das Personal hat einen Falschen Roller angegeben
+-- der Haltepunkt erhält den Standort des ERoller beim erstellen 
+
+DELIMITER $$
+create or replace procedure p_CreateHaltepunkt
+(inFahrtenbuchID int, inRollerID int)
+begin
+    declare RollerSchonInEinenWagen CONDITION FOR SQLSTATE '45000';
+    declare RollerGibtEsNicht CONDITION FOR SQLSTATE '45000';
+
+
+    declare exit Handler 
+    for 1452 
+    begin
+        SIGNAL SQLSTATE '23000' SET
+        MESSAGE_TEXT = 'Es ist kein zugehöriger Fahrtenbucheintrag zufinden';
+    end;
+
+    if inRollerID >= (select max(ERollerID) from eroller)
+        then
+        SIGNAL RollerGibtEsNicht SET MESSAGE_TEXT = 'Der Angegebene ERoller existiert nicht';
+    end if;
+
+    if (fn_CheckRollerStatusH(inRollerID)) != -1
+        then
+        SIGNAL RollerSchonInEinenWagen SET MESSAGE_TEXT = 'Roller ist schon in einem andern Wagen';
+    end if;
+
+    Insert Into Haltepunkt(Zeitpunkt, FahrtenbuchID, StandortID)
+    values (CURRENT_TIMESTAMP(), inFahrtenbuchID, fn_GetRollerStandort(inRollerID));
+
+    update eroller
+    set HaltepunktID = (select Max(HaltepunktID) from Haltepunkt where FahrtenbuchID = inFahrtenbuchID and StandortID = fn_GetRollerStandort(inRollerID))
+    where ERollerID = inRollerID;
+
+
+end$$
+DELIMITER ;
+
+-- ab auf erfolgreichen /F 40.1.2.1./ Fahrtenbucheintrag erstellen auf
+call p_CreateHaltepunkt(101, 22);
+-- Ergebnis: ohne Fehler 
+call p_CreateHaltepunkt(10, 20);
+-- Ergebnis: FEHLER wiederholung geht nicht
+call p_CreateHaltepunkt(1000, 20);
+-- Ergebnis: FEHLER, Es ist kein zugehöriger Fahrtenbucheintrag zufinden
+call p_CreateHaltepunkt(10, 300);
+-- Ergebnis: FEHLER, Roller Existiert nicht
 
 /********************************************************************************************************/
 -- /F 40.1.2.2./ Fahrtenbucheintrag abschließen 
@@ -308,15 +383,17 @@ begin
     set RollerEingesamelt   = vHilfMir
     where FahrtenbuchID     = inFahrtenbuchID;
 
-	CALL p_RollerInLager(inFahrtenbuchID);
-	-- nochmal Testen
+	call p_RollerInLager(inFahrtenbuchID);
 	
 	
 end$$
 DELIMITER ;
 
--- call p_FinishFahrtenbuch(1)
--- schon Abgeschlossen
+-- baut auf /F 40.1.2.3./ Haltepunkt anlegen auf
+call p_FinishFahrtenbuch(101);
+-- Ergebnis: ohne Fehler 
+call p_FinishFahrtenbuch(101);
+-- Ergebnis: FEHLER Eintrag schon abgeschlossen
 
 /********************************************************************************************************/
 -- /F 40.2.2/ Wartung aktualisieren
@@ -340,85 +417,51 @@ begin
 end$$
 DELIMITER ;
 
--- CALL p_UpdateWartung(1,'2023-11-13')
--- FEHLER vorherige Wartung wartung noch nicht vollzogen
+call p_UpdateWartung(1,'2023-11-13');
+-- Ergebnis: FEHLER vorherige Wartung wartung noch nicht vollzogen
 
--- noch Testdatensatz einfügen
+-- für Test
+update fuhrpark
+set NaechsteWartung = '2000-04-05'
+where FirmenwagenID = 1;
+
+call p_UpdateWartung(1,'2023-11-13');
+-- Ergebnis: ohne Fehler 
 
 /********************************************************************************************************/
--- /F 40.1.2.3./ Haltepunkt anlegen
--- Diese Prozedur erstellt einen Haltepunkt in der Haltepunkt Tabelle und fügt den FK bei dem Zugehörigen ERoller hinzu
--- Abbruchbedingungen sind der Roller ist schon einen Haltepunkt zu geordnet und das Personal hat einen Falschen Roller angegeben
--- der Haltepunkt erhält den Standort des ERoller beim erstellen 
+-- /F 40.1.1./
+-- Diese Prozedur erzeugt eine View über Fahrtenbuchdaten und gibt dies dann aus
+-- Die View zeigt alle Fahrtenbucheinträge der letzten 30 Tage aus Erfurt mit vollständigem Namen, Fahrtstart/-ende/-dauer, 
+--   Anzahl eingesammelter E-Roller und welcher Firmenwagen jeweils dafür benutzt wurde, geordnet nach dem Abfahrtsdatum.
 
 DELIMITER $$
-create or replace procedure p_CreateHaltepunkt
-(inFahrtenbuchID int, inRollerID int)
+create or replace procedure p_FahrtenbuchView
+()
 begin
-    declare RollerSchonInEinenWagen CONDITION FOR SQLSTATE '45000';
-    declare RollerGibtEsNicht CONDITION FOR SQLSTATE '45000';
 
+    create or replace view FahrtenbuchView(MitarbeiterName,Standort ,Fahrtstart_Ende, Fahrtdauer, AnzahlRollerEingesamelt, FirmenwagenNummer)
+    as
+    select  Concat(p.Nachname,' ' , p.Vorname),
+            S.Stadt,
+            Concat(F.Fahrtstart,' | ' ,F.Fahrtende), 
+            F.Fahrtdauer, 
+            F.RollerEingesamelt, 
+            F.FirmenwagenID
+    from Fahrtenbuch F
+    join Mitarbeiter M on F.MitarbeiterID = M.MitarbeiterID
+    join Privatinfo P on M.PrivatinfoID = P.PrivatinfoID
+    join Standort S on S.StandortID = M.ArbeitsortID
+    where S.Stadt = 'Erfurt'
+    and DATEDIFF(now(),F.Fahrtstart) < 30
+    order by F.Fahrtstart;
 
-    declare exit Handler 
-    for 1452 
-    begin
-        SIGNAL SQLSTATE '23000' SET
-        MESSAGE_TEXT = 'Es ist kein zugehöriger Fahrtenbucheintrag zufinden';
-    end;
-
-    if (inRollerID >= (select max(ERollerID) from eroller) <= 0)
-        then
-        SIGNAL RollerGibtEsNicht SET MESSAGE_TEXT = 'Der Angegebene ERoller existiert nicht';
-    end if;
-
-    if (fn_CheckRollerStatusH(inRollerID)) != -1
-        then
-        SIGNAL RollerSchonInEinenWagen SET MESSAGE_TEXT = 'Roller ist schon in einem andern Wagen';
-    end if;
-
-    Insert Into Haltepunkt(Zeitpunkt, FahrtenbuchID, StandortID)
-    values (CURRENT_TIMESTAMP(), inFahrtenbuchID, fn_GetRollerStandort(inRollerID));
-
-    update eroller
-    set HaltepunktID = (select Max(HaltepunktID) from Haltepunkt where FahrtenbuchID = inFahrtenbuchID and StandortID = fn_GetRollerStandort(inRollerID))
-    where ERollerID = inRollerID;
-
+    select * from FahrtenbuchView;
 
 end$$
 DELIMITER ;
 
--- CALL p_CreateHaltepunkt(10, 20)
--- geht
--- CALL p_CreateHaltepunkt(10, 20)1
--- wiederholung geht nicht
--- CALL p_CreateHaltepunkt(1000, 20)
--- Fehler "Es ist kein zugehöriger Fahrtenbucheintrag zufinden"
--- CALL p_CreateHaltepunkt(10, 0)
--- CALL p_CreateHaltepunkt(10, 300) 
--- Fehler Roller Existiert nicht
-
-/********************************************************************************************************/
--- /F 40.1.1./
--- Dies View zeigt alle Fahrtenbucheinträge der letzten 30 Tage aus Erfurt mit vollständigem Namen, Fahrtstart/-ende/-dauer, 
---      Anzahl eingesammelter E-Roller und welcher Firmenwagen jeweils dafür benutzt wurde, geordnet nach dem Abfahrtsdatum.
-
-create or replace view FahrtenbuchView(MitarbeiterName,Standort ,Fahrtstart_Ende, Fahrtdauer, AnzahlRollerEingesamelt, FirmenwagenNummer)
-as
-select  Concat(p.Nachname,' ' , p.Vorname),
-        S.Stadt,
-        Concat(F.Fahrtstart,' | ' ,F.Fahrtende), 
-        F.Fahrtdauer, 
-        F.RollerEingesamelt, 
-        F.FirmenwagenID
-from Fahrtenbuch F
-join Mitarbeiter M on F.MitarbeiterID = M.MitarbeiterID
-join Privatinfo P on M.PrivatinfoID = P.PrivatinfoID
-join Standort S on S.StandortID = M.ArbeitsortID
-where S.Stadt = 'Erfurt'
-and DATEDIFF(now(),F.Fahrtstart) < 30
-order by F.Fahrtstart;
-
--- select * from FahrtenbuchView
+call p_FahrtenbuchView();
+-- Ergebnis: zeigt View
 
 /********************************************************************************************************/
 -- /F 40.2.3/ neues Firmenfahrzeug hinzufügen
@@ -435,7 +478,8 @@ begin
 end$$
 DELIMITER ;
 
--- call p_CreateFirmenwagen(1067, 'VW Crafter 2019', '2025-11-11', 1);
+call p_CreateFirmenwagen(1067, 'VW Crafter 2019', '2025-11-11', 1);
+-- Ergebnis: ohne Fehler
 
 /********************************************************************************************************/
 -- /F 40.2.1/ Nächste Wartung Anzeigen
@@ -453,8 +497,8 @@ begin
 end$$
 DELIMITER ;
 
--- call p_ShowWartung(1)
-
+call p_ShowWartung(1);
+-- Ergebnis: ohne Fehler
 
 /********************************************************************************************************/
 -- /F 40.1.2./ Fahrtenbucheintrag anlegen
@@ -474,52 +518,66 @@ begin
     end if;
 
 
-    if inFahrtenbuchID = 0
+    if inFahrtenbuchID != 0
         then
         call p_FinishFahrtenbuch(inFahrtenbuchID);
-
     else
         call p_CreateFahrtenbuch(inFirmenwagenID, inMitarbeiterEmail);
-
     end if;
 
 end$$
 DELIMITER ;
 
--- call p_Fahrtenbuch(10, 'y.koch@EcoWheels.com', 0)
--- call p_Fahrtenbuch(17,'y.koch@EcoWheels.com', 0)
 
+call p_Fahrtenbuch(17,'y.koch@EcoWheels.com', 0);
+-- Ergebnis: ohne Fehler
+call p_Fahrtenbuch(17,'y.koch@EcoWheels.com', 102);
+-- Ergebnis: ohne Fehler
 
 /********************************************************************************************************/
 -- /F 50.2./ Buchungsstatistiken für APP käufe erstellen
--- Diese Sicht zeigt die Durchschnittszahlung aller Nutzer pro Stadt geteilt in APP und Karte für die letzten 120 Tagen.
+-- Die Prozedur erzeugt eine gleichnamige View über eine mögliche Buchungstatistik und ruft dies auf. 
+-- Diese Sicht zeigt die Durchschnittszahlung aller Nutzer pro Stadt geteilt in APP und Karte für die letzten 120 Tagen. 
+-- Dazu wird gezeigt, wie viele Prozent von allen Zahlungen wo und wie getätigt wurden 
+-- (Der Prozentsatz bezieht sich nicht auf den Anteil des Gesamtgewinns, sondern auf die Häufigkeit der Zahlung)
 
-create or replace view BuchungsStatView(Stadt, Durchschnittszahlung, ZahlungsType, Verkaufsanteil)
-as
-select  
-        S.Stadt,
-        Concat(cast(AVG(Z.GesamtPreis) as float),' Euro'),
-        replace(replace(ZahlungsType,'A','APP'),'K','Kundenkarte'),
-        Concat(cast(
-                count(Z.ZMethodID) * 100.0 / 
-        	    (select count(*) from Zahlung Z
-                join Bestellung_ERoller BER on BER.BestellERID = Z.BestellERID
-                join Kunde K on K.KundeID = BER.KundeID
-                where DATEDIFF(now(),K.LetzteNutzung) < 120)
-        as float), '%')
 
-from Kunde K
-join Standort S on S.StandortID = K.WohnortID
-join Kundenkonto KK on KK.KKontoID = K.KKontoID
-join Bestellung_ERoller BER on BER.KundeID = K.KundeID
-join Zahlung Z on Z.BestellERID = BER.BestellERID
-join Zahlungsmethode ZM on ZM.ZMethodID = Z.ZMethodID
-where DATEDIFF(now(),K.LetzteNutzung) < 120
-group by S.Stadt ,ZM.ZahlungsType;
+DELIMITER $$
+create or replace procedure p_BuchungsStatView
+()
+begin
 
-SELECT * from  BuchungsStatView
+    create or replace view BuchungsStatView(Stadt, Durchschnittszahlung, ZahlungsType, Verkaufsanteil)
+    as
+    select  
+            S.Stadt,
+            Concat(Format(AVG(Z.GesamtPreis), 2, 'de_DE'),' Euro'),
+            replace(replace(ZahlungsType,'A','APP'),'K','Kundenkarte'),
+            Concat(Format(
+                    count(Z.ZMethodID) * 100.0 / 
+            	    (select count(*) from Zahlung Z
+                    join Bestellung_ERoller BER on BER.BestellERID = Z.BestellERID
+                    join Kunde K on K.KundeID = BER.KundeID
+                    where DATEDIFF(now(),K.LetzteNutzung) < 120)
+            , 2), '%')
 
--- Prozentualer Ansatz Karte/app
--- AVG Zahlung pro app
--- letzte 120 Tage
--- alle pro Stadt
+    from Kunde K
+    join Standort S on S.StandortID = K.WohnortID
+    join Kundenkonto KK on KK.KKontoID = K.KKontoID
+    join Bestellung_ERoller BER on BER.KundeID = K.KundeID
+    join Zahlung Z on Z.BestellERID = BER.BestellERID
+    join Zahlungsmethode ZM on ZM.ZMethodID = Z.ZMethodID
+    where DATEDIFF(now(),K.LetzteNutzung) < 120
+    group by S.Stadt ,ZM.ZahlungsType;
+
+    SELECT * from  BuchungsStatView;
+
+end$$
+DELIMITER ;
+
+
+call p_BuchungsStatView();
+-- Ergebnis: zeigt View
+
+
+/********************************************************************************************************/
