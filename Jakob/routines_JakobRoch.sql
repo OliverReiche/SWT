@@ -640,15 +640,3 @@ call p_CreateFirmenwagen(177508, 'VW Crafter', '1999-12-24' , 5);
 call p_UpdateWartung(177508, '2024.07.11');
 
 call p_ShowWartung(177508);
-
-
-
-
-
-
--- Bekannt Fehler und noch "außstehende Features" (die zuspät erkannt wurden)
-
--- Features/Funktion/Prozeduren:
--- 
--- Fehler:
--- 
