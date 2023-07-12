@@ -883,7 +883,7 @@ call p_CreateLieferungÜbersicht('Erfurt','2023-07-03', '2023-07-07');
 /********************************************************************************************************/
 
 
--- /F10.1.1./ Kundenstatistik anzeigen lassen
+-- /F50.1.2./ Kundenstatistik anzeigen lassen
 
 -- Im folgenden wird noch eine Prozedur erstellt, welche zur Erstellung einer Kundenstatistik dienen soll
 -- die Prozedur erwartet keine Eingabe 
