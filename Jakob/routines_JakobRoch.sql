@@ -54,7 +54,8 @@ returns time
 BEGIN
     declare outFahrtdauer time;
 
-    select from_unixtime(((UNIX_TIMESTAMP(Fahrtstart) - UNIX_TIMESTAMP(Fahrtende)) * (-1)), '%h:%i:%s')
+    -- wo kommt die extra Stunde her??????
+    select SUBTIME(from_unixtime(((UNIX_TIMESTAMP(Fahrtstart) - UNIX_TIMESTAMP(Fahrtende)) * (-1)), '%h:%i:%s'), '01:00:00')
     into outFahrtdauer 
     from fahrtenbuch 
     where FahrtenbuchID = inFahrtenbuchID;
@@ -64,7 +65,7 @@ end $$
 DELIMITER ;
 
 SELECT fn_CalculateFahrtdauer(1);
--- Ergebnis: 05:44:39
+-- Ergebnis: 04:44:39
 
 /********************************************************************************************************/
 -- /F 40.1.2.7./ Mitarbeiter Standort ermitteln
@@ -151,13 +152,13 @@ begin
     DECLARE NichtAbgeschlossenerEintrag CONDITION FOR SQLSTATE '45000';
     DECLARE AutoIstNochInBenutzung CONDITION FOR SQLSTATE '45000';
 
-    if fn_GetFirmenwagenStandort(inFirmenwagenID) = fn_GetMitarbeiterStandort(inMitarbeiterID)
+    if fn_GetFirmenwagenStandort(inFirmenwagenID) != fn_GetMitarbeiterStandort(inMitarbeiterID)
         then
         SIGNAL AbbruchMitarbeiterStandort SET MESSAGE_TEXT = 'Mitarbeiter und Lager/Fahrzeug sind nicht an Selben Standort/Region';
     end if;
 
 
-    if STRCMP((select JobName from mitarbeiter where MitarbeiterID = inMitarbeiterID), 'KFZ-WH') = 0
+    if STRCMP((select JobName from mitarbeiter where MitarbeiterID = inMitarbeiterID), 'KFZ-WH') != 0
         then
         SIGNAL AbbruchJobName SET MESSAGE_TEXT = 'Nicht passender JobName';
     end if;
@@ -166,13 +167,13 @@ begin
 -- es wird hier immer nur der Letzte Eintrag des Mitarbeiter/Fahrzeugs betrachte, 
 --  weil der Rest wenn alles so wie geplannt funktioniert schon geprüft wurde
 
-    if IFNUll((select Fahrtende from Fahrtenbuch where MitarbeiterID = inMitarbeiterID having max(Fahrtstart) < Fahrtende),-1) != -1
+    if IFNUll((select Fahrtende from Fahrtenbuch where MitarbeiterID = inMitarbeiterID having max(Fahrtstart) < Fahrtende),-1) = -1
         then
         SIGNAL NichtAbgeschlossenerEintrag SET MESSAGE_TEXT ='Mitarbeiter hat noch einen nicht abgeschlossen Fahrtenbucheintrag';
     end if;
 
 
-    if IFNUll((select Fahrtende from Fahrtenbuch where FirmenwagenID = inFirmenwagenID having max(Fahrtstart) < Fahrtende),-1) != -1
+    if IFNUll((select Fahrtende from Fahrtenbuch where FirmenwagenID = inFirmenwagenID having max(Fahrtstart) < Fahrtende),-1) = -1
         then
         SIGNAL AutoIstNochInBenutzung SET MESSAGE_TEXT ='Das Ausgewealte Firmenfahrzeug ist noch in Benutztung';
     end if;
@@ -227,11 +228,12 @@ begin
         SIGNAL MitarbeiterGibtEsNicht SET MESSAGE_TEXT = 'Kein Mitarbeiter unter dieser E-Mail zu finden';
     end IF;
 
-select fn_CheckIntegritaet(inFirmenwagenID ,vMitarbeiterID);
+    select fn_CheckIntegritaet(inFirmenwagenID ,vMitarbeiterID);
 
+    Insert Into fahrtenbuch(Fahrtstart, FirmenwagenID, MitarbeiterID)
+    values (CURRENT_TIMESTAMP(), inFirmenwagenID, vMitarbeiterID);
 
-Insert Into fahrtenbuch(Fahrtstart, FirmenwagenID, MitarbeiterID)
-values (CURRENT_TIMESTAMP(), inFirmenwagenID, vMitarbeiterID);
+    -- select LAST_INSERT_ID(); 
 
 end$$
 DELIMITER ;
@@ -262,9 +264,13 @@ DELIMITER $$
 create or replace procedure p_RollerInLager
 (inFahrtenbuchID int)
 begin
-    
+    declare vFirmenwagen int;
+
+    select FirmenwagenID into vFirmenwagen from fahrtenbuch where fahrtenbuchID = inFahrtenbuchID;
+
     update ERoller
-    set HaltepunktID = NULL, StandortID = fn_GetFirmenwagenStandort(inFahrtenbuchID)
+    set HaltepunktID = NULL, 
+    StandortID = fn_GetFirmenwagenStandort(vFirmenwagen)
     where ERollerID IN 
     (
         select ERollerID from ERoller 
@@ -282,14 +288,14 @@ DELIMITER ;
 -- Testfall
 -- bitte nicht beachten das für den Test am Anfang Haltepunkt und Roller StandortID nicht zusammmenpassen
 update ERoller
-set HaltepunktID =(RAND()*(76-72)+72)
+set HaltepunktID = (RAND()*(76-72)+72)
 where ERollerID between 1 and 5;
 
 -- Haltepunkte 72-76 gehören zu Fahrtenbucheintrag 21
 -- das passende Lager hat den Standort 101
 
 call p_RollerInLager(21);
--- Ergebnis: geht
+-- Ergebnis: ERoller 1-5 StandortID 101
 
 /********************************************************************************************************/
 -- /F 40.1.2.3./ Haltepunkt anlegen
@@ -319,7 +325,7 @@ begin
 
     if (fn_CheckRollerStatusH(inRollerID)) != -1
         then
-        SIGNAL RollerSchonInEinenWagen SET MESSAGE_TEXT = 'Roller ist schon in einem andern Wagen';
+        SIGNAL RollerSchonInEinenWagen SET MESSAGE_TEXT = 'Roller ist schon in einem Wagen';
     end if;
 
     Insert Into Haltepunkt(Zeitpunkt, FahrtenbuchID, StandortID)
@@ -336,11 +342,14 @@ DELIMITER ;
 -- ab auf erfolgreichen /F 40.1.2.1./ Fahrtenbucheintrag erstellen auf
 call p_CreateHaltepunkt(101, 22);
 -- Ergebnis: ohne Fehler 
-call p_CreateHaltepunkt(10, 20);
+call p_CreateHaltepunkt(101, 22);
 -- Ergebnis: FEHLER wiederholung geht nicht
-call p_CreateHaltepunkt(1000, 20);
+call p_CreateHaltepunkt(1000, 22);
+-- Ergebnis: FEHLER, Roller ist schon in einem Wagen
+-- Handler reagiert hier zuspät
+call p_CreateHaltepunkt(1000, 23);
 -- Ergebnis: FEHLER, Es ist kein zugehöriger Fahrtenbucheintrag zufinden
-call p_CreateHaltepunkt(10, 300);
+call p_CreateHaltepunkt(10, 1000);
 -- Ergebnis: FEHLER, Roller Existiert nicht
 
 /********************************************************************************************************/
@@ -483,14 +492,14 @@ call p_CreateFirmenwagen(1067, 'VW Crafter 2019', '2025-11-11', 1);
 
 /********************************************************************************************************/
 -- /F 40.2.1/ Nächste Wartung Anzeigen
--- Dies Prozedur zeigt das nächste Wartungsdatum
+-- Dies Prozedur zeigt das nächste Wartungsdatum und die FirmenwagenID
 
 DELIMITER $$
 create or replace procedure p_ShowWartung
 (inFirmenwagenID int)
 begin
 
-    select NaechsteWartung
+    select FirmenwagenID, NaechsteWartung
     from fuhrpark
     where FirmenwagenID = inFirmenwagenID;
 
@@ -581,3 +590,65 @@ call p_BuchungsStatView();
 
 
 /********************************************************************************************************/
+
+-- Testsituationen
+
+
+-- /T 40.1./ Fahrtenbuch verwalten
+-- Situation 1:
+-- Testfall Fahrtenbuch alles funktioniert
+
+call p_Fahrtenbuch(1, 'l.schulz@EcoWheels.com', 0);
+
+call p_CreateHaltepunkt(103, 81);
+
+call p_CreateHaltepunkt(103, 149);
+
+call p_CreateHaltepunkt(103, 110);
+
+call p_CreateHaltepunkt(103, 138);
+
+call p_Fahrtenbuch(1, 'l.schulz@EcoWheels.com', 103);
+
+
+-- Situation 2:
+-- Testfall Fahrtenbuch mit fehlerhafter Eingaben
+
+call p_Fahrtenbuch(5, 'm.franz@googlemail.com.com');
+
+call p_Fahrtenbuch(5, 'm.franz@googlemail.com.com', 0);
+
+call p_Fahrtenbuch(5, 'm.franz@EcoWheels.com', 0);
+
+call p_CreateHaltepunkt(104, 16);
+
+call p_CreateHaltepunkt(104, 16);
+
+call p_CreateHaltepunkt(104, 18);
+
+call p_Fahrtenbuch(5, 'm.franz@EcoWheels.com', 104);
+
+
+-- /T 40.2./  Firmenwagen verwalten
+
+-- Situation 3:
+-- Testfall einfügen eines Firmenwagens
+
+call p_CreateFirmenwagen(177508, 'VW Crafter', '1999-12-24' , 5);
+
+-- 
+call p_UpdateWartung(177508, '2024.07.11');
+
+call p_ShowWartung(177508);
+
+
+
+
+
+
+-- Bekannt Fehler und noch "außstehende Features" (die zuspät erkannt wurden)
+
+-- Features/Funktion/Prozeduren:
+-- 
+-- Fehler:
+-- 
